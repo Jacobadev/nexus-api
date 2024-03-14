@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/gateway-address/api/server"
+	"github.com/gateway-address/server"
 )
 
 func main() {

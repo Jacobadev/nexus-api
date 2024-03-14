@@ -8,8 +8,8 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/gateway-address/api/model"
-	"github.com/gateway-address/api/routes"
+	"github.com/gateway-address/model"
+	"github.com/gateway-address/routes"
 )
 
 func TestGetAllUsers(t *testing.T) {

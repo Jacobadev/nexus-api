@@ -6,8 +6,8 @@ import (
 	"os"
 	"strconv"
 
-	"github.com/gateway-address/api/config"
-	"github.com/gateway-address/api/routes"
+	"github.com/gateway-address/config"
+	"github.com/gateway-address/routes"
 	"github.com/gorilla/mux"
 )
 

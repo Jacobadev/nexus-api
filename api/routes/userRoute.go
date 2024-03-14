@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/gateway-address/api/model"
+	"github.com/gateway-address/model"
 
-	"github.com/gateway-address/api/config"
+	"github.com/gateway-address/config"
 
 	_ "github.com/mattn/go-sqlite3"
 )
