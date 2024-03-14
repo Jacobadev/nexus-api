@@ -8,8 +8,6 @@ import (
 	"github.com/gateway-address/model"
 
 	"github.com/gateway-address/config"
-
-	_ "github.com/mattn/go-sqlite3"
 )
 
 func ValidateUserInput(r *http.Request) error {
@@ -39,7 +37,7 @@ func UserMethodController(w http.ResponseWriter, r *http.Request) {
 	var response interface{}
 
 	if r.Method == "GET" {
-		response = userGetAll(r, w)
+		response = UserGetAll(r, w)
 
 		// if r.Method == "POST" {
 		// 	userCreate(w, r)
@@ -59,7 +57,7 @@ func UserMethodController(w http.ResponseWriter, r *http.Request) {
 	WriteJSONResponse(w, response)
 }
 
-func userGetAll(r *http.Request, w http.ResponseWriter) []model.User {
+func UserGetAll(r *http.Request, w http.ResponseWriter) []model.User {
 	var users []model.User
 
 	db, err := config.GetDbConnection()
