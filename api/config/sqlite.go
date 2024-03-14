@@ -4,7 +4,6 @@ import (
 	"database/sql"
 	"fmt"
 )
-
 func GetDbConnection() (*sql.DB, error) {
 	dbPath := "./db/main.db"
 	db, err := sql.Open("sqlite3", dbPath)

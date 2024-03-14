@@ -23,7 +23,7 @@ func WriteJSONResponse(w http.ResponseWriter, data interface{}) {
 		return
 	}
 	w.Header().Set("Content-Type", "application/json")
-
+	w.WriteHeader(http.StatusOK)
 	_, err = w.Write(users)
 	if err != nil {
 		http.Error(w, "Failed to write JSON response", http.StatusInternalServerError)
@@ -39,9 +39,8 @@ func UserMethodController(w http.ResponseWriter, r *http.Request) {
 	var response interface{}
 
 	if r.Method == "GET" {
-		response = UserGetAll(r, w)
+		response = userGetAll(r, w)
 
-		// TODO
 		// if r.Method == "POST" {
 		// 	userCreate(w, r)
 		// }
@@ -60,7 +59,7 @@ func UserMethodController(w http.ResponseWriter, r *http.Request) {
 	WriteJSONResponse(w, response)
 }
 
-func UserGetAll(r *http.Request, w http.ResponseWriter) []model.User {
+func userGetAll(r *http.Request, w http.ResponseWriter) []model.User {
 	var users []model.User
 
 	db, err := config.GetDbConnection()
@@ -91,3 +90,10 @@ func UserGetAll(r *http.Request, w http.ResponseWriter) []model.User {
 	}
 	return users
 }
+
+// func userCreate(w http.ResponseWriter, r *http.Request) { vars := mux.Vars(r)
+// 	username := vars["username"]
+// 	password := vars["password"]
+// 	w.WriteHeader(http.StatusCreated)
+// 	w.WriteString(username)
+// }

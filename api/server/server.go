@@ -3,12 +3,21 @@ package server
 import (
 	"fmt"
 	"net/http"
+	"os"
+	"strconv"
 
 	"github.com/gateway-address/api/config"
 	"github.com/gateway-address/api/routes"
+	"github.com/gorilla/mux"
 )
 
 func serverGetPort() (int, error) {
+	portStr := os.Getenv("PORT")
+	port, err := strconv.Atoi(portStr)
+	if err == nil {
+		return port, nil
+	}
+
 	cfgFile, err := config.LoadConfig()
 	if err != nil {
 		return 0, err
@@ -20,12 +29,12 @@ func serverGetPort() (int, error) {
 	return cfg.Server.Port, nil
 }
 
-func Start(mux *http.ServeMux) {
+func StartServer(mux *mux.Router) {
 	port, err := serverGetPort()
 	if err != nil {
 		fmt.Printf("%s", err)
 	}
-	address := fmt.Sprintf(":%d", port)
+	address := fmt.Sprintf("0.0.0.0:%d", port)
 	fmt.Printf("Listening on %s\n", address)
 
 	err = http.ListenAndServe(address, mux)
@@ -34,11 +43,14 @@ func Start(mux *http.ServeMux) {
 	}
 }
 
-func RegisterUserRoutes(mux *http.ServeMux) {
-	mux.HandleFunc("/api/v1/user", routes.UserMethodController)
+func StartServerV1(mux *mux.Router) {
 }
 
-func GetMuxV1() *http.ServeMux {
-	mux := http.NewServeMux()
+func RegisterRoutes(mux *mux.Router) {
+	mux.HandleFunc("/user", routes.UserMethodController)
+}
+
+func GetMuxV1() *mux.Router {
+	mux := mux.NewRouter()
 	return mux
 }
