@@ -8,8 +8,8 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/gateway-address/handler"
 	"github.com/gateway-address/model"
-	"github.com/gateway-address/routes"
 )
 
 func TestGetAllUsers(t *testing.T) {
@@ -20,7 +20,7 @@ func TestGetAllUsers(t *testing.T) {
 	w := httptest.NewRecorder()
 
 	// Call the handler function
-	routes.UserGetAll(req, w)
+	user := handler.UserGetAll()
 
 	// Get the HTTP response
 	response := w.Result()

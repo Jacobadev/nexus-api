@@ -7,7 +7,6 @@ import (
 	"strconv"
 
 	"github.com/gateway-address/config"
-	"github.com/gateway-address/routes"
 	"github.com/gorilla/mux"
 )
 
@@ -43,14 +42,8 @@ func StartServer(mux *mux.Router) {
 	}
 }
 
-func StartServerV1(mux *mux.Router) {
-}
-
-func RegisterRoutes(mux *mux.Router) {
-	mux.HandleFunc("/user", routes.UserMethodController)
-}
-
-func GetMuxV1() *mux.Router {
+func GetMuxRouterV1() *mux.Router {
 	mux := mux.NewRouter()
+	mux = mux.PathPrefix("/api/v1").Subrouter()
 	return mux
 }

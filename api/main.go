@@ -1,11 +1,12 @@
 package main
 
 import (
+	"github.com/gateway-address/routes"
 	"github.com/gateway-address/server"
 )
 
 func main() {
-	mux := server.GetMuxV1()
-	server.RegisterRoutes(mux)
+	mux := server.GetMuxRouterV1()
+	routes.RegisterUserHandler(mux)
 	server.StartServer(mux)
 }
