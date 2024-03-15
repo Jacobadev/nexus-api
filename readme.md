@@ -15,13 +15,13 @@
 ## USE CASES
 
 
-Register User
-Login
-Recover Password
-Update Profile
-View Profile
-Log Out
-Manage Permissions
+- Register User
+- Login
+- Recover Password
+- Update Profile
+- View Profile
+- Log Out
+
 
 
 
