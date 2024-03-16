@@ -13,24 +13,13 @@ import (
 
 func RegisterUserHandler(mux *mux.Router, userHandler *handler.UserHandler) {
 	mux.HandleFunc("/user", func(w http.ResponseWriter, r *http.Request) {
+		if r.Method == http.MethodPost {
+			// Extrair os dados do usuário do request
+			handler.CreateUserHandler(userHandler)(w, r)
+			return
+		}
 		handler.GetUsersHandler(userHandler)(w, r)
-	}).Methods("GET")
-
-	mux.HandleFunc("/user", func(w http.ResponseWriter, r *http.Request) {
-		handler.CreateUserHandler(userHandler)(w, r)
-		userData := handler.ExtractUserInput(r)
-
-		// Imprimir os dados do usuário para verificar se estão corretos
-		fmt.Println("Dados do usuário recebidos:")
-		fmt.Printf("First Name: %s\n", userData.FirstName)
-		fmt.Printf("Last Name: %s\n", userData.LastName)
-		fmt.Printf("Username: %s\n", userData.UserName)
-		fmt.Printf("Email: %s\n", userData.Email)
-		fmt.Printf("Password: %s\n", userData.Password)
-	}).Methods("POST")
-}
-
-func RegisterUserPOSTHandler(mux *mux.Router) {
+	}).Methods("GET", "POST") // Permitir tanto GET quanto POST para a rota "/user"
 }
 
 func main() {

@@ -23,7 +23,13 @@ func NewUserHandler(userRepository user.UserRepository, repo *repository.Reposit
 
 func CreateUserHandler(userHandler *UserHandler) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		user := ExtractUserInput(r)
+		user, err := user.ExtractUserInput(r)
+		fmt.Println(user.FirstName)
+		fmt.Println(user.LastName)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
 		// v := validate.NewValidator()
 		// err := v.ValidateUser(user)
 		// if err != nil {
@@ -31,14 +37,7 @@ func CreateUserHandler(userHandler *UserHandler) http.HandlerFunc {
 		// 	return
 		// }
 		//
-		res, err := userHandler.Repository.Create(user)
-		fmt.Printf("User Data:\n")
-		fmt.Printf("%v\n", res)
-		fmt.Printf("First Name: %s\n", user.FirstName)
-		fmt.Printf("Last Name: %s\n", user.LastName)
-		fmt.Printf("Username: %s\n", user.UserName)
-		fmt.Printf("Email: %s\n", user.Email)
-		fmt.Printf("Password: %s\n", user.Password)
+		err = userHandler.Repository.Create(user)
 		if err != nil {
 			fmt.Println(err)
 			http.Error(w, fmt.Sprintf("Failed to create user: %v", err), http.StatusInternalServerError)
