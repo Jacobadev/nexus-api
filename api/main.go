@@ -14,7 +14,6 @@ import (
 func RegisterUserHandler(mux *mux.Router, userHandler *handler.UserHandler) {
 	mux.HandleFunc("/user", func(w http.ResponseWriter, r *http.Request) {
 		if r.Method == http.MethodPost {
-			// Extrair os dados do usuário do request
 			handler.CreateUserHandler(userHandler)(w, r)
 			return
 		}
