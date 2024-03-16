@@ -12,6 +12,10 @@ type RepositorySqlite struct {
 	db *sql.DB
 }
 
+func repositoryConfig(db *sql.DB) {
+	db.Exec("PRAGMA foreign_keys = ON; PRAGMA timezone = 'UTC")
+}
+
 // NewRepository cria uma nova instância do Repository.
 func NewRepositorySqlite() (*RepositorySqlite, error) {
 	db, err := sql.Open("sqlite", "./db/main.db")
@@ -22,18 +26,17 @@ func NewRepositorySqlite() (*RepositorySqlite, error) {
 }
 
 func (r *RepositorySqlite) Create(user *user.User) error {
-	stmt, err := r.db.Prepare("INSERT INTO user (first_name, last_name, username, password, email,created_at,updated_at) VALUES (?, ?, ?, ?, ?,?,?)")
+	stmt, err := r.db.Prepare("INSERT INTO user (first_name, last_name, username, password, email) VALUES (?, ?, ?, ?, ?)")
 	if err != nil {
 		return err
 	}
 	defer stmt.Close()
 
 	// Execute SQL statement to insert data
-	_, error := stmt.Exec(user.ID, user.FirstName, user.LastName, user.UserName, user.Password, user.Email, user.CreatedAt, user.UpdatedAt)
+	_, error := stmt.Exec(user.FirstName, user.LastName, user.UserName, user.Password, user.Email)
 	if error != nil {
 		return error
 	}
-	fmt.Printf("%s,%s,%s,%s,%s", user.ID, user.LastName, user.UserName, user.Email, user.CreatedAt)
 	return nil
 }
 
@@ -51,7 +54,7 @@ func (r *RepositorySqlite) GetAll() ([]user.User, error) {
 
 	for allUsers.Next() {
 		var u user.User
-		if err := allUsers.Scan(&u.ID, &u.FirstName, &u.LastName, &u.UserName, &u.Email, &u.Password, &u.CreatedAt, &u.UpdatedAt); err != nil {
+		if err := allUsers.Scan(&u.FirstName, &u.LastName, &u.UserName, &u.Email, &u.Password, &u.CreatedAt, &u.UpdatedAt); err != nil {
 			fmt.Println(err)
 			continue
 		}

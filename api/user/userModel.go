@@ -5,9 +5,6 @@ import (
 	"encoding/json"
 	"io"
 	"net/http"
-	"time"
-
-	"github.com/google/uuid"
 )
 
 type UserRepository interface {
@@ -16,14 +13,14 @@ type UserRepository interface {
 }
 
 type User struct {
-	ID        uuid.UUID `json:"id"`
-	FirstName string    `json:"first_name"`
-	LastName  string    `json:"last_name"`
-	UserName  string    `json:"username"`
-	Email     string    `json:"email"`
-	Password  string    `json:"password"`
-	CreatedAt time.Time `json:"created_at"`
-	UpdatedAt time.Time `json:"updated_at"`
+	ID        int    `json:"id"`
+	FirstName string `json:"first_name"`
+	LastName  string `json:"last_name"`
+	UserName  string `json:"username"`
+	Email     string `json:"email"`
+	Password  string `json:"password"`
+	CreatedAt string `json:"created_at"`
+	UpdatedAt string `json:"updated_at"`
 }
 
 func ExtractUserInput(r *http.Request) (*User, error) {
@@ -33,11 +30,7 @@ func ExtractUserInput(r *http.Request) (*User, error) {
 	}
 
 	// Create a new user instance with default values
-	newUser := &User{
-		ID:        uuid.New(),
-		CreatedAt: time.Now(),
-		UpdatedAt: time.Now(),
-	}
+	newUser := &User{}
 
 	// Unmarshal request body JSON data into newUser
 	err = json.Unmarshal(body, newUser)
