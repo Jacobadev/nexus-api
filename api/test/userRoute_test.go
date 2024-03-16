@@ -9,7 +9,6 @@ import (
 	"testing"
 
 	"github.com/gateway-address/handler"
-	"github.com/gateway-address/model"
 )
 
 func TestGetAllUsers(t *testing.T) {
@@ -39,7 +38,7 @@ func TestGetAllUsers(t *testing.T) {
 
 	fmt.Println("Response Body:", string(body))
 	// Validate the response body contains valid JSON
-	var users []model.User
+	var users user.CreateNew
 	if err := json.Unmarshal(body, &users); err != nil {
 		t.Errorf("Error parsing JSON response: %v", err)
 		return

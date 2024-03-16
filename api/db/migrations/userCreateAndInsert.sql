@@ -5,8 +5,8 @@ CREATE TABLE user (
     user_name VARCHAR(50),
     email VARCHAR(50),
     password VARCHAR(50),
-    created_at DATETIME,
-    updated_at DATETIME
+    created_at VARCHAR(50),
+    updated_at VARCHAR(50)
 );
 
 CREATE TRIGGER set_created_at
