@@ -7,34 +7,41 @@ import (
 	"github.com/gateway-address/repository"
 	"github.com/gateway-address/server"
 	"github.com/gateway-address/user"
-	"github.com/gateway-address/validate"
 )
 
-type HandleUser struct {
+type UserHandler struct {
 	UserRepository user.UserRepository
 	Repository     *repository.RepositorySqlite
 }
 
-func NewHandleUser(userRepository user.UserRepository, repo *repository.RepositorySqlite) *HandleUser {
-	return &HandleUser{
+func NewUserHandler(userRepository user.UserRepository, repo *repository.RepositorySqlite) *UserHandler {
+	return &UserHandler{
 		UserRepository: userRepository,
 		Repository:     repo,
 	}
 }
 
-func HandleCreateUser(handleUser *HandleUser) http.HandlerFunc {
+func CreateUserHandler(userHandler *UserHandler) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		user := ExtractUserInput(r)
-		v := validate.NewValidator()
-		err := v.ValidateUser(user)
+		// v := validate.NewValidator()
+		// err := v.ValidateUser(user)
+		// if err != nil {
+		// 	http.Error(w, err.Error(), http.StatusBadRequest)
+		// 	return
+		// }
+		//
+		res, err := userHandler.Repository.Create(user)
+		fmt.Printf("User Data:\n")
+		fmt.Printf("%v\n", res)
+		fmt.Printf("First Name: %s\n", user.FirstName)
+		fmt.Printf("Last Name: %s\n", user.LastName)
+		fmt.Printf("Username: %s\n", user.UserName)
+		fmt.Printf("Email: %s\n", user.Email)
+		fmt.Printf("Password: %s\n", user.Password)
 		if err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
-			return
-		}
-
-		err = handleUser.Repository.Create(user) // Usando o método CreateUser da interface UserRepository
-		if err != nil {
-			http.Error(w, "Failed to create user", http.StatusInternalServerError)
+			fmt.Println(err)
+			http.Error(w, fmt.Sprintf("Failed to create user: %v", err), http.StatusInternalServerError)
 			return
 		}
 
@@ -42,9 +49,9 @@ func HandleCreateUser(handleUser *HandleUser) http.HandlerFunc {
 	}
 }
 
-func HandleGetUsers(handleUser *HandleUser) http.HandlerFunc {
+func GetUsersHandler(userHandler *UserHandler) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		users, err := handleUser.Repository.GetAll() // Usando o método GetAll da interface UserRepository
+		users, err := userHandler.Repository.GetAll()
 		if err != nil {
 			http.Error(w, fmt.Sprintf("Failed to get users: %v", err), http.StatusInternalServerError)
 			return

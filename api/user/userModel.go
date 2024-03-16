@@ -1,9 +1,5 @@
 package user
 
-import (
-	"github.com/google/uuid"
-)
-
 type UserRepository interface {
 	GetAll() ([]interface{}, error)
 	Create(userInfo User) error
@@ -20,11 +16,11 @@ type User struct {
 	UpdatedAt string `json:"updated_at"`
 }
 
-func NewUser() *User {
-	user := User{
-		ID:        int(uuid.New().ID()),
-		CreatedAt: "2022-11-11T11:11:11Z",
-		UpdatedAt: "2022-11-11T11:11:11Z",
-	}
-	return &user
-}
+// func NewUser() *User {
+// 	user := User{
+// 		ID:        int(uuid.New().ID()),
+// 		CreatedAt: time.Now().String(),
+// 		UpdatedAt: time.Now().String(),
+// 	}
+// 	return &user
+// }

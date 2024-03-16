@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/gateway-address/handler"
@@ -10,25 +11,39 @@ import (
 	"github.com/gorilla/mux"
 )
 
-func RegisterUserHandler(mux *mux.Router) {
+func RegisterUserHandler(mux *mux.Router, userHandler *handler.UserHandler) {
 	mux.HandleFunc("/user", func(w http.ResponseWriter, r *http.Request) {
-		var userRepository user.UserRepository
-		repositorySqlite, err := repository.NewRepositorySqlite()
-		if err != nil {
-			// Handle error
-			http.Error(w, "Failed to initialize repository", http.StatusInternalServerError)
-			return
-		}
-
-		handleUser := handler.NewHandleUser(userRepository, repositorySqlite)
-
-		// Call HandleCreateUser function passing handleUser instance
-		handler.HandleGetUsers(handleUser)(w, r)
+		handler.GetUsersHandler(userHandler)(w, r)
 	}).Methods("GET")
+
+	mux.HandleFunc("/user", func(w http.ResponseWriter, r *http.Request) {
+		handler.CreateUserHandler(userHandler)(w, r)
+		userData := handler.ExtractUserInput(r)
+
+		// Imprimir os dados do usuário para verificar se estão corretos
+		fmt.Println("Dados do usuário recebidos:")
+		fmt.Printf("First Name: %s\n", userData.FirstName)
+		fmt.Printf("Last Name: %s\n", userData.LastName)
+		fmt.Printf("Username: %s\n", userData.UserName)
+		fmt.Printf("Email: %s\n", userData.Email)
+		fmt.Printf("Password: %s\n", userData.Password)
+	}).Methods("POST")
+}
+
+func RegisterUserPOSTHandler(mux *mux.Router) {
 }
 
 func main() {
 	mux := server.GetMuxRouterV1()
-	RegisterUserHandler(mux)
+
+	var userRepository user.UserRepository
+	repo, err := repository.NewRepositorySqlite()
+
+	userHandler := handler.NewUserHandler(userRepository, repo)
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	RegisterUserHandler(mux, userHandler)
 	server.StartServer(mux)
 }

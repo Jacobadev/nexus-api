@@ -21,22 +21,19 @@ func NewRepositorySqlite() (*RepositorySqlite, error) {
 	return &RepositorySqlite{db: db}, nil
 }
 
-func (r *RepositorySqlite) Create(user user.User) error {
-	stmt, err := r.db.Prepare("INSERT INTO user (first_name,last_name,user_name, password,email,) VALUES (?, ?,?,?,?)")
+func (r *RepositorySqlite) Create(user user.User) (sql.Result, error) {
+	stmt, err := r.db.Prepare("INSERT INTO user (first_name, last_name, username, password, email) VALUES (?, ?, ?, ?, ?)")
 	if err != nil {
-		fmt.Println(err)
-		return err
+		return nil, fmt.Errorf("error preparing SQL statement: %s", err)
 	}
 	defer stmt.Close()
 
 	// Execute SQL statement to insert data
-	_, err = stmt.Exec(user.FirstName, user.LastName, user.UserName, user.Password, user.Email)
-	if err != nil {
-		fmt.Println(err)
-		return err
+	result, resError := stmt.Exec(user.FirstName, user.LastName, user.UserName, user.Password, user.Email)
+	if resError != nil {
+		return nil, fmt.Errorf("error executing SQL statement: %s", err)
 	}
-
-	return nil
+	return result, nil
 }
 
 func (r *RepositorySqlite) GetAll() ([]user.User, error) {

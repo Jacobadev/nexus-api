@@ -4,15 +4,17 @@ import (
 	"net/http"
 
 	"github.com/gateway-address/user"
+	"github.com/gorilla/mux"
 )
 
 func ExtractUserInput(r *http.Request) user.User {
+	vars := mux.Vars(r)
 	user := user.User{
-		FirstName: r.FormValue("first_name"),
-		LastName:  r.FormValue("last_name"),
-		UserName:  r.FormValue("username"),
-		Email:     r.FormValue("email"),
-		Password:  r.FormValue("password"),
+		FirstName: vars["first_name"],
+		LastName:  vars["last_name"],
+		UserName:  vars["username"],
+		Email:     vars["email"],
+		Password:  r.FormValue("password"), // Extract password from form values
 	}
 	return user
 }

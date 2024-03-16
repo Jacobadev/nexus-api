@@ -1,13 +1,3 @@
-CREATE TABLE user (
-    ID INTEGER PRIMARY KEY,
-    first_name VARCHAR(50),
-    last_name VARCHAR(50),
-    user_name VARCHAR(50),
-    email VARCHAR(50),
-    password VARCHAR(50),
-    created_at VARCHAR(50),
-    updated_at VARCHAR(50)
-);
 
 CREATE TRIGGER set_created_at
 AFTER INSERT ON user
