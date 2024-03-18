@@ -42,8 +42,10 @@ func StartServer(mux *mux.Router) {
 	}
 }
 
-func GetMuxRouterV1() *mux.Router {
+func GetMuxSubRouterV1() *mux.Router {
 	mux := mux.NewRouter()
 	mux = mux.PathPrefix("/api/v1").Subrouter()
+
+	mux.UseEncodedPath()
 	return mux
 }

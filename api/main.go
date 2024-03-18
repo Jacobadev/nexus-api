@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"net/http"
 
 	"github.com/gateway-address/handler"
 	"github.com/gateway-address/repository"
@@ -11,18 +10,18 @@ import (
 	"github.com/gorilla/mux"
 )
 
-func RegisterUserHandler(mux *mux.Router, userHandler *handler.UserHandler) {
-	mux.HandleFunc("/user", func(w http.ResponseWriter, r *http.Request) {
-		if r.Method == http.MethodPost {
-			handler.CreateUserHandler(userHandler)(w, r)
-			return
-		}
-		handler.GetUsersHandler(userHandler)(w, r)
-	}).Methods("GET", "POST") // Permitir tanto GET quanto POST para a rota "/user"
+func RegisterUserHandler(router *mux.Router, userHandler *handler.UserHandler) {
+	router.HandleFunc("/user", handler.CreateUserHandler(userHandler)).Methods("POST")
+	router.HandleFunc("/user", handler.GetUsersHandler(userHandler)).Methods("GET")
+	router.HandleFunc("/user/limit={limit}/offset={offset}", handler.GetPaginatedUsersHandler(userHandler)).Methods("GET")
+
+	router.HandleFunc("/user/{id}", handler.GetUserByIDHandler(userHandler)).Methods("GET")
+
+	// router.HandleFunc("/user/{limit}/{offset}", handler.GetPaginatedUsersHandler(userHandler)).Methods("GET")
 }
 
 func main() {
-	mux := server.GetMuxRouterV1()
+	mux := server.GetMuxSubRouterV1()
 
 	var userRepository user.UserRepository
 	repo, err := repository.NewRepositorySqlite()
