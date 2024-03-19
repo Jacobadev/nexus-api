@@ -15,6 +15,6 @@ create_model:
 	sqlite3 $(DB_FILE) < $(CREATE_MODEL)
 
 test:
-	@go test ./... | grep -v '?'
+	@go test ./test -count=1
 create_db:
 	@sqlite3 $(DB_FILE) ".schema"

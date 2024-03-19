@@ -9,7 +9,7 @@ import (
 )
 
 func repositoryConfig(db *sql.DB) *sql.DB {
-	db.Exec("PRAGMA foreign_keys = ON; PRAGMA timezone = 'UTC")
+	db.Exec("PRAGMA foreign_keys = ON")
 	return db
 }
 

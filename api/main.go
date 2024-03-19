@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"net/http"
 
 	"github.com/gateway-address/handler"
 	"github.com/gateway-address/repository"
@@ -19,6 +20,12 @@ func RegisterUserHandler(router *mux.Router, userHandler *handler.UserHandler) {
 	router.HandleFunc("/user/{id}", handler.PartialUpdateUserByIDHandler(userHandler)).Methods("PATCH")
 }
 
+func RootHandler(router *mux.Router) {
+	router.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
+		fmt.Fprintf(w, `{"status": "OK"}`)
+	}).Methods("GET")
+}
+
 func main() {
 	mux := server.GetMuxSubRouterV1()
 
@@ -30,6 +37,7 @@ func main() {
 		fmt.Println(err)
 	}
 
+	RootHandler(mux)
 	RegisterUserHandler(mux, userHandler)
 	server.StartServer(mux)
 }

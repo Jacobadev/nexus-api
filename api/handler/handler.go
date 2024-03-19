@@ -23,29 +23,6 @@ func NewUserHandler(userRepository user.UserRepository, repo *repository.Reposit
 	}
 }
 
-func CreateUserHandler(userHandler *UserHandler) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		user, err := user.ExtractUserInput(r)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
-			return
-		}
-		// v := validate.NewValidator()
-		// err := v.ValidateUser(user)
-		// if err != nil {
-		// 	http.Error(w, err.Error(), http.StatusBadRequest)
-		// 	return
-		// }
-		//
-		err = userHandler.Repository.Create(user)
-		if err != nil {
-			fmt.Println(err)
-			http.Error(w, fmt.Sprintf("Failed to create user: %v", err), http.StatusInternalServerError)
-			return
-		}
-	}
-}
-
 func GetUsersHandler(userHandler *UserHandler) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		users, err := userHandler.Repository.GetAll()
@@ -57,6 +34,24 @@ func GetUsersHandler(userHandler *UserHandler) http.HandlerFunc {
 		w.WriteHeader(http.StatusOK)
 		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(users)
+	}
+}
+
+func CreateUserHandler(userHandler *UserHandler) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		// validate.ValidateRequest(r)
+		user, err := user.ExtractUserInput(r)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		err = userHandler.Repository.Create(user)
+		if err != nil {
+			http.Error(w, fmt.Sprintf("Failed to create user: %v", err), http.StatusInternalServerError)
+			return
+		}
+		w.WriteHeader(http.StatusCreated)
 	}
 }
 

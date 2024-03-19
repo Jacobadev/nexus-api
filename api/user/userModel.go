@@ -3,6 +3,7 @@ package user
 import (
 	"database/sql"
 	"encoding/json"
+	"errors"
 	"io"
 	"net/http"
 )
@@ -40,6 +41,21 @@ func ExtractUserInput(r *http.Request) (*User, error) {
 	err = json.Unmarshal(body, newUser)
 	if err != nil {
 		return nil, err
+	}
+	if newUser.FirstName == "" {
+		return nil, errors.New("first_name is required")
+	}
+	if newUser.LastName == "" {
+		return nil, errors.New("last_name is required")
+	}
+	if newUser.UserName == "" {
+		return nil, errors.New("username is required")
+	}
+	if newUser.Email == "" {
+		return nil, errors.New("email is required")
+	}
+	if newUser.Password == "" {
+		return nil, errors.New("password is required")
 	}
 
 	return newUser, nil
