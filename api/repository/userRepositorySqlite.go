@@ -8,11 +8,6 @@ import (
 	_ "modernc.org/sqlite"
 )
 
-func repositoryConfig(db *sql.DB) *sql.DB {
-	db.Exec("PRAGMA foreign_keys = ON")
-	return db
-}
-
 type RepositorySqlite struct {
 	db *sql.DB
 }
@@ -23,7 +18,11 @@ func NewRepositorySqlite() (*RepositorySqlite, error) {
 	if err != nil {
 		return nil, fmt.Errorf("error opening sqlite database: %s", err)
 	}
-	db = repositoryConfig(db)
+
+	if err := db.Ping(); err != nil {
+		return nil, err
+	}
+
 	return &RepositorySqlite{db: db}, nil
 }
 
