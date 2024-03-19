@@ -13,11 +13,10 @@ import (
 func RegisterUserHandler(router *mux.Router, userHandler *handler.UserHandler) {
 	router.HandleFunc("/user", handler.CreateUserHandler(userHandler)).Methods("POST")
 	router.HandleFunc("/user", handler.GetUsersHandler(userHandler)).Methods("GET")
-	router.HandleFunc("/user/limit={limit}/offset={offset}", handler.GetPaginatedUsersHandler(userHandler)).Methods("GET")
-
 	router.HandleFunc("/user/{id}", handler.GetUserByIDHandler(userHandler)).Methods("GET")
-
-	// router.HandleFunc("/user/{limit}/{offset}", handler.GetPaginatedUsersHandler(userHandler)).Methods("GET")
+	router.HandleFunc("/user/{id}", handler.DeleteUserByIDHandler(userHandler)).Methods("DELETE")
+	router.HandleFunc("/user/{id}", handler.UpdateUserByIDHandler(userHandler)).Methods("PUT")
+	router.HandleFunc("/user/{id}", handler.PartialUpdateUserByIDHandler(userHandler)).Methods("PATCH")
 }
 
 func main() {

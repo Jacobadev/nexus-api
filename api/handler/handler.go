@@ -71,7 +71,7 @@ func GetUserByIDHandler(userHandler *UserHandler) http.HandlerFunc {
 			return
 		}
 
-		user, err := userHandler.Repository.GetUserByID(id)
+		user, err := userHandler.Repository.GetByID(id)
 		if err != nil {
 			http.Error(w, fmt.Sprintf("Failed to get user: %v", err), http.StatusInternalServerError)
 			return
@@ -113,7 +113,7 @@ func GetPaginatedUsersHandler(userHandler *UserHandler) http.HandlerFunc {
 			return
 		}
 
-		users, err := userHandler.Repository.GetPaginatedUsers(limit, offset)
+		users, err := userHandler.Repository.GetPaginated(limit, offset)
 		if err != nil {
 			http.Error(w, fmt.Sprintf("Failed to get paginated users: %v", err), http.StatusInternalServerError)
 		}
@@ -121,5 +121,67 @@ func GetPaginatedUsersHandler(userHandler *UserHandler) http.HandlerFunc {
 		w.WriteHeader(http.StatusOK)
 		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(users)
+	}
+}
+
+func DeleteUserByIDHandler(userHandler *UserHandler) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		vars := mux.Vars(r)
+		idStr := vars["id"]
+		id, err := strconv.Atoi(idStr)
+		if err != nil {
+			http.Error(w, fmt.Sprintf("Failed to convert id to int: %v", err), http.StatusInternalServerError)
+			return
+		}
+		err = userHandler.Repository.DeleteByID(id)
+		if err != nil {
+			http.Error(w, fmt.Sprintf("Failed to delete user: %v", err), http.StatusInternalServerError)
+			return
+		}
+		w.WriteHeader(http.StatusOK)
+	}
+}
+
+func UpdateUserByIDHandler(userHandler *UserHandler) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		vars := mux.Vars(r)
+		idStr := vars["id"]
+		id, err := strconv.Atoi(idStr)
+		if err != nil {
+			http.Error(w, fmt.Sprintf("Failed to convert id to int: %v", err), http.StatusInternalServerError)
+			return
+		}
+		var user user.User
+		err = json.NewDecoder(r.Body).Decode(&user)
+		if err != nil {
+			http.Error(w, fmt.Sprintf("Failed to convert id to int: %v", err), http.StatusInternalServerError)
+			return
+		}
+		err = userHandler.Repository.UpdateByID(id, &user)
+		if err != nil {
+			http.Error(w, fmt.Sprintf("Failed to update user: %v", err), http.StatusInternalServerError)
+		}
+	}
+}
+
+func PartialUpdateUserByIDHandler(userHandler *UserHandler) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		vars := mux.Vars(r)
+		idStr := vars["id"]
+		id, err := strconv.Atoi(idStr)
+		if err != nil {
+			http.Error(w, fmt.Sprintf("Failed to convert id to int: %v", err), http.StatusInternalServerError)
+			return
+		}
+		var user user.User
+		err = json.NewDecoder(r.Body).Decode(&user)
+		if err != nil {
+			http.Error(w, fmt.Sprintf("Failed to convert id to int: %v", err), http.StatusInternalServerError)
+			return
+		}
+		err = userHandler.Repository.PartialUpdateByID(id, &user)
+		if err != nil {
+			http.Error(w, fmt.Sprintf("Failed to update user: %v", err), http.StatusInternalServerError)
+		}
 	}
 }

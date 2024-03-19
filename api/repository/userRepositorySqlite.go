@@ -67,7 +67,7 @@ func (r *RepositorySqlite) GetAll() ([]user.User, error) {
 	return users, nil // Return slice of users and no error
 }
 
-func (r *RepositorySqlite) GetUserByID(id int) (user.User, error) {
+func (r *RepositorySqlite) GetByID(id int) (user.User, error) {
 	stmt, err := r.db.Prepare("SELECT * FROM user WHERE id = ?")
 	if err != nil {
 		return user.User{}, err
@@ -93,7 +93,7 @@ func (r *RepositorySqlite) GetUserByID(id int) (user.User, error) {
 	return u, nil
 }
 
-func (r *RepositorySqlite) GetPaginatedUsers(limit int, offset int) ([]user.User, error) {
+func (r *RepositorySqlite) GetPaginated(limit int, offset int) ([]user.User, error) {
 	var users []user.User
 	userRows, err := r.db.Query("SELECT * FROM user LIMIT ? OFFSET ?", limit, offset)
 	if err != nil {
@@ -115,4 +115,32 @@ func (r *RepositorySqlite) GetPaginatedUsers(limit int, offset int) ([]user.User
 		return users, err // Return slice with retrieved users and error
 	}
 	return users, nil // Return slice of users and no error
+}
+
+func (r *RepositorySqlite) DeleteByID(id int) error {
+	_, err := r.db.Exec("DELETE FROM user WHERE id = ?", id)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (r *RepositorySqlite) UpdateByID(id int, user *user.User) error {
+	_, err := r.db.Exec("UPDATE user SET first_name = ?, last_name = ?, username = ?, email = ? WHERE id = ?", user.FirstName, user.LastName, user.UserName, user.Email, user.ID)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (r *RepositorySqlite) Close() error {
+	return r.db.Close()
+}
+
+func (r *RepositorySqlite) PartialUpdateByID(id int, user *user.User) error {
+	_, err := r.db.Exec("UPDATE user SET first_name = ?, last_name = ?, username = ?, email = ? WHERE id = ?", user.FirstName, user.LastName, user.UserName, user.Email, user.ID)
+	if err != nil {
+		return err
+	}
+	return nil
 }
