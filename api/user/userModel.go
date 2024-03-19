@@ -11,8 +11,9 @@ type UserRepository interface {
 	GetAll() ([]interface{}, error)
 	GetById(id int) (interface{}, error)
 	Create(userInfo User) (sql.Result, error)
-	Update(id int, userInfo User) (sql.Result, error)
-	Delete(id int) (sql.Result, error)
+	UpdateByID(id int, userInfo User) (sql.Result, error)
+	DeleteByID(id int) (sql.Result, error)
+	PartialUpdateByID(id int, userInfo User) (sql.Result, error)
 }
 
 type User struct {

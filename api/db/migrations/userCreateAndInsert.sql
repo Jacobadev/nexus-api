@@ -11,7 +11,7 @@ BEGIN
     UPDATE user SET updated_at = DATETIME('now') WHERE rowid = NEW.rowid;
 END;
 
-INSERT INTO user (first_name, last_name, user_name, email, password)
+INSERT INTO user (first_name, last_name, username, email, password)
 VALUES
     ('John', 'Doe', 'johndoe', 'john@example.com', 'password123'),
     ('Jane', 'Smith', 'janesmith', 'jane@example.com', 'password456'),

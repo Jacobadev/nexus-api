@@ -8,13 +8,13 @@ import (
 	_ "modernc.org/sqlite"
 )
 
-type RepositorySqlite struct {
-	db *sql.DB
-}
-
 func repositoryConfig(db *sql.DB) *sql.DB {
 	db.Exec("PRAGMA foreign_keys = ON; PRAGMA timezone = 'UTC")
 	return db
+}
+
+type RepositorySqlite struct {
+	db *sql.DB
 }
 
 // NewRepository cria uma nova instância do Repository.
