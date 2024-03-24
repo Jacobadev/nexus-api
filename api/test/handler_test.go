@@ -1,29 +1,15 @@
 package test
 
 import (
-	"database/sql"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 
 	"github.com/gateway-address/handler"
-	"github.com/gateway-address/user"
 	_ "github.com/go-sql-driver/mysql"
 )
 
-var pool *mockDriver
-
-func init() {
-	pool = &mockDriver{
-		conns: make(map[string]*sqlmock),
-	}
-	sql.Register("sqlmock", pool)
-}
-
 func TestGetUsersHandler(t *testing.T) {
-	var userRepository user.UserRepository
-	userHandler := handler.NewUserHandler(userRepository, mockDB)
-
 	// Create a request to simulate GET /user
 	req, err := http.NewRequest("GET", "/user", nil)
 	if err != nil {

@@ -12,12 +12,12 @@ import (
 )
 
 func RegisterUserHandler(router *mux.Router, userHandler *handler.UserHandler) {
-	router.HandleFunc("/user", handler.CreateUserHandler(userHandler)).Methods("POST")
-	router.HandleFunc("/user", handler.GetUsersHandler(userHandler)).Methods("GET")
-	router.HandleFunc("/user/{id}", handler.GetUserByIDHandler(userHandler)).Methods("GET")
-	router.HandleFunc("/user/{id}", handler.DeleteUserByIDHandler(userHandler)).Methods("DELETE")
-	router.HandleFunc("/user/{id}", handler.UpdateUserByIDHandler(userHandler)).Methods("PUT")
-	router.HandleFunc("/user/{id}", handler.PartialUpdateUserByIDHandler(userHandler)).Methods("PATCH")
+	router.HandleFunc("/", handler.CreateUserHandler(userHandler)).Methods("POST")
+	router.HandleFunc("/", handler.GetUsersHandler(userHandler)).Methods("GET")
+	router.HandleFunc("{id}", handler.GetUserByIDHandler(userHandler)).Methods("GET")
+	router.HandleFunc("/{id}", handler.DeleteUserByIDHandler(userHandler)).Methods("DELETE")
+	router.HandleFunc("/{id}", handler.UpdateUserByIDHandler(userHandler)).Methods("PUT")
+	router.HandleFunc("/{id}", handler.PartialUpdateUserByIDHandler(userHandler)).Methods("PATCH")
 }
 
 func RootHandler(router *mux.Router) {
@@ -27,7 +27,7 @@ func RootHandler(router *mux.Router) {
 }
 
 func main() {
-	mux := server.GetMuxSubRouterV1()
+	mux := server.GetUserRouter()
 
 	var userRepository user.UserRepository
 	repo, err := repository.NewRepositorySqlite()
