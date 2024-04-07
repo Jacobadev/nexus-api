@@ -22,7 +22,7 @@ const (
 )
 
 var (
-	BadRequest            = errors.New("bad request")
+	BadRequest            = errors.New("Bad request")
 	WrongCredentials      = errors.New("Wrong Credentials")
 	NotFound              = errors.New("Not Found")
 	Unauthorized          = errors.New("Unauthorized")

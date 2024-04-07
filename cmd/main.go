@@ -8,7 +8,6 @@ import (
 	"github.com/gateway-address/internal/server"
 	"github.com/gateway-address/pkg/db/postgres"
 	"github.com/gateway-address/pkg/logger"
-	"github.com/gateway-address/pkg/utils"
 	"github.com/gorilla/mux"
 )
 
@@ -22,9 +21,7 @@ func HealthCheck(router *mux.Router) {
 func main() {
 	log.Println("Starting api server")
 
-	configPath := utils.GetConfigPath()
-
-	cfgFile, err := config.LoadConfig(configPath)
+	cfgFile, err := config.LoadConfig("./config/config")
 	if err != nil {
 		log.Fatalf("LoadConfig: %v", err)
 	}

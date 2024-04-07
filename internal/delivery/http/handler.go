@@ -1,12 +1,15 @@
 package http
 
 import (
-	"fmt"
+	"encoding/json"
 	"net/http"
 
 	"github.com/gateway-address/config"
 	"github.com/gateway-address/internal/auth"
+	model "github.com/gateway-address/internal/models"
+	"github.com/gateway-address/pkg/httpErrors"
 	"github.com/gateway-address/pkg/logger"
+	"github.com/gateway-address/pkg/utils"
 )
 
 type authHandlers struct {
@@ -21,8 +24,40 @@ func NewAuthHandlers(cfg *config.Config, authUC auth.UseCase, log logger.Logger)
 
 func (h *authHandlers) Register() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		fmt.Println("chamou Usecase")
-		h.authUC.Register()
+		user := &model.User{}
+
+		if err := utils.ReadRequest(r, user); err != nil {
+			utils.LogResponseError(r, h.logger, err)
+			w.WriteHeader(http.StatusBadRequest)
+			w.Write([]byte(httpErrors.ErrBadRequest))
+			return
+		}
+		createdUser, err := h.authUC.Register(user)
+		if err != nil {
+			utils.LogResponseError(r, h.logger, err)
+			w.WriteHeader(http.StatusInternalServerError)
+			w.Write([]byte(httpErrors.InternalServerError.Error()))
+			return
+		}
+
+		if err := utils.ReadRequest(r, user); err != nil {
+			utils.LogResponseError(r, h.logger, err)
+			w.WriteHeader(http.StatusInternalServerError)
+			w.Write([]byte(httpErrors.InternalServerError.Error()))
+			return
+		}
+		w.WriteHeader(http.StatusCreated)
+		jsonData, err := json.Marshal(createdUser)
+		if err != nil {
+			utils.LogResponseError(r, h.logger, err)
+			w.WriteHeader(http.StatusInternalServerError)
+			w.Write([]byte(httpErrors.InternalServerError.Error()))
+			return
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusCreated)
+		w.Write(jsonData)
 	}
 }
 

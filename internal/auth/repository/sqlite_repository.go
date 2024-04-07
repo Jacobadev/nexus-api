@@ -3,6 +3,7 @@ package repository
 import (
 	"fmt"
 
+	model "github.com/gateway-address/internal/models"
 	"github.com/jmoiron/sqlx"
 	_ "modernc.org/sqlite"
 )
@@ -16,9 +17,16 @@ func NewRepositorySqlite(db *sqlx.DB) *RepositorySqlite {
 }
 
 // NewRepository cria uma nova instância do Repository.
-func (r *RepositorySqlite) Register() error {
+func (r *RepositorySqlite) Register(user *model.User) (*model.User, error) {
+	u := &model.User{}
 	fmt.Println("registrou no banco")
-	return nil
+	return u, nil
+}
+
+func (r *RepositorySqlite) FindByEmail(user *model.User) (*model.User, error) {
+	u := &model.User{}
+	r.db.QueryRowx(findUserByEmail, user.Email).StructScan(u)
+	return u, nil
 }
 
 // func (r *RepositorySqlite) GetAll() ([]model.User, error) {
@@ -127,4 +135,3 @@ func (r *RepositorySqlite) Register() error {
 // func (r *RepositorySqlite) Stats() sql.DBStats {
 // 	stats := r.db.Stats()
 // 	return stats
-// }

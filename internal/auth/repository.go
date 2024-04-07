@@ -7,10 +7,11 @@ import (
 )
 
 type Repository interface {
+	Register(user model.User) (sql.Result, error)
 	GetAll() ([]interface{}, error)
 	GetById(id int) (interface{}, error)
-	Create(userInfo model.User) (sql.Result, error)
-	UpdateByID(id int, userInfo model.User) (sql.Result, error)
+	UpdateByID(id int, user model.User) (sql.Result, error)
+	PartialUpdateByID(id int, user model.User) (sql.Result, error)
 	DeleteByID(id int) (sql.Result, error)
-	PartialUpdateByID(id int, userInfo model.User) (sql.Result, error)
+	FindByEmail(*model.User) (*model.User, error)
 }

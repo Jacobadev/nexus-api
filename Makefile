@@ -17,6 +17,6 @@ create_model:
 	sqlite3 $(DB_FILE) < $(CREATE_MODEL)
 
 test:
-	@go test ./test -count=1
+	@go test
 create_db:
 	@sqlite3 $(DB_FILE) ".schema"

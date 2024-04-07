@@ -3,7 +3,7 @@ package validate
 import (
 	"errors"
 
-	"github.com/gateway-address/user"
+	model "github.com/gateway-address/internal/models"
 )
 
 // Validator is the interface for validating user input.
@@ -24,7 +24,7 @@ func NewValidator() *UserValidator {
 }
 
 // CreateUserInput validates user input for creating a new user.
-func (uv *UserValidator) ValidateUser(user user.User) error {
+func (uv *UserValidator) ValidateUser(user model.User) error {
 	// Validate user input
 	if err := uv.ValidateUsernameLength(user.UserName); err != nil {
 		return err

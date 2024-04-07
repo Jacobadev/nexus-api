@@ -56,6 +56,14 @@ type Config struct {
 	Redis    RedisConfig
 	Logger   Logger
 	Postgres PostgresConfig
+	Cookie   Cookie
+}
+
+type Cookie struct {
+	Name     string
+	MaxAge   int
+	Secure   bool
+	HTTPOnly bool
 }
 
 func LoadConfig(filename string) (*viper.Viper, error) {

@@ -36,3 +36,10 @@ redis:
   PoolTimeout: 240
   Password: ""
   DB: 0
+
+
+cookie:
+  Name: jwt-token
+  MaxAge: 86400
+  Secure: false
+  HttpOnly: true

@@ -1,12 +1,16 @@
 package usecase
 
 import (
-	"fmt"
+	"net/http"
 
 	"github.com/gateway-address/config"
 	"github.com/gateway-address/internal/auth"
 	"github.com/gateway-address/internal/auth/repository"
+	model "github.com/gateway-address/internal/models"
+	"github.com/gateway-address/pkg/httpErrors"
 	"github.com/gateway-address/pkg/logger"
+	"github.com/gateway-address/pkg/utils"
+	"github.com/pkg/errors"
 )
 
 const (
@@ -26,9 +30,33 @@ func NewAuthUseCase(cfg *config.Config, authRepo *repository.RepositorySqlite, l
 	return &authUC{cfg: cfg, authRepo: authRepo, logger: log}
 }
 
-func (u *authUC) Register() {
-	fmt.Println("chamou banco")
-	u.authRepo.Register()
+func (u *authUC) Register(user *model.User) (*model.UserWithToken, error) {
+	existsUser, err := u.authRepo.FindByEmail(user)
+
+	if existsUser != nil || err == nil {
+		return nil, httpErrors.NewRestErrorWithMessage(http.StatusBadRequest, httpErrors.ErrEmailAlreadyExists, nil)
+	}
+
+	if err = user.PrepareCreate(); err != nil {
+		return nil, httpErrors.NewBadRequestError(errors.Wrap(err, "authUC.Register.PrepareCreate"))
+	}
+
+	createdUser, err := u.authRepo.Register(user)
+	if err != nil {
+		return nil, err
+	}
+	createdUser.SanitizePassword()
+
+	token, err := utils.GenerateJWTToken(createdUser, u.cfg)
+	if err != nil {
+		return nil, httpErrors.NewInternalServerError(errors.Wrap(err, "authUC.Register.GenerateJWTToken"))
+	}
+	u.authRepo.Register(user)
+
+	return &model.UserWithToken{
+		User:  createdUser,
+		Token: token,
+	}, nil
 }
 
 // Update existing user
