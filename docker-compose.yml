@@ -15,7 +15,7 @@ services:
   websocket2:
     image: websocket
     container_name: detoka
-    command: go run .
+    command: ./main
     environment:
       - APPID=2222
     depends_on:
@@ -27,7 +27,7 @@ services:
     build: .
     image: websocket
     container_name: meu_piru
-    command: go run .
+    command: ./main
     environment:
       - APPID=1111
     depends_on:

@@ -50,7 +50,6 @@ func WebSocket(w http.ResponseWriter, r *http.Request) {
 	}
 	defer conn.Close()
 
-	conn.WriteMessage(websocket.TextMessage, []byte(os.Getenv("APPID")))
 	// Loop para ler mensagens do cliente e escrever de volta
 	for {
 
@@ -58,11 +57,6 @@ func WebSocket(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			log.Println("Erro ao ler mensagem do cliente:", err)
 			continue // Se houver um erro na leitura da mensagem, interrompa o loop, mas mantenha a conexão aberta
-		}
-		err = conn.WriteMessage(websocket.TextMessage, message)
-		if err != nil {
-			log.Println("Erro ao enviar mensagem de volta para o cliente:", err)
-			continue
 		}
 		conn.WriteMessage(websocket.TextMessage, []byte(os.Getenv("APPID")))
 		// Decodificar a mensagem JSON do cliente em uma estrutura de dados

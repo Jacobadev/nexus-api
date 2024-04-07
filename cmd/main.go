@@ -1,72 +1,50 @@
 package main
 
 import (
-	"context"
-	"fmt"
+	"log"
 	"net/http"
-	"os"
 
-	"github.com/gateway-address/handler"
-	"github.com/gateway-address/repository"
-	"github.com/gateway-address/server"
-	"github.com/gateway-address/user"
-	"github.com/gateway-address/websocket"
-	"github.com/go-redis/redis/v8"
+	"github.com/gateway-address/config"
+	"github.com/gateway-address/internal/server"
+	"github.com/gateway-address/pkg/db/postgres"
+	"github.com/gateway-address/pkg/logger"
+	"github.com/gateway-address/pkg/utils"
 	"github.com/gorilla/mux"
 )
 
-func RegisterUserHandler(router *mux.Router, userHandler *handler.UserHandler) {
-	router.HandleFunc("/", handler.CreateUserHandler(userHandler)).Methods("POST")
-	router.HandleFunc("/", handler.GetUsersHandler(userHandler)).Methods("GET")
-	router.HandleFunc("/{id}", handler.GetUserByIDHandler(userHandler)).Methods("GET")
-	router.HandleFunc("/{id}", handler.DeleteUserByIDHandler(userHandler)).Methods("DELETE")
-	router.HandleFunc("/{id}", handler.UpdateUserByIDHandler(userHandler)).Methods("PUT")
-	router.HandleFunc("/{id}", handler.PartialUpdateUserByIDHandler(userHandler)).Methods("PATCH")
-}
-
-func RegisterWebSocket(router *mux.Router) {
-	router.HandleFunc("/ws", websocket.WebSocket)
-}
-
-func RootHandler(router *mux.Router) {
+func HealthCheck(router *mux.Router) {
 	router.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprintf(w, `{"status": "OK"}`)
-	}).Methods("GET")
+		w.WriteHeader(http.StatusOK)
+		w.Write([]byte("OK"))
+	})
 }
-
-var ctx = context.Background()
 
 func main() {
-	r := mux.NewRouter()
-	rdb := redis.NewClient(&redis.Options{
-		Addr:     "redis:6379",
-		Password: "", // no password set
-		DB:       0,  // use default DB
-	})
-	go func() {
-		res := rdb.Ping(ctx)
+	log.Println("Starting api server")
 
-		if err := res.Err(); err != nil {
-			fmt.Println("Erro ao conectar ao Redis:", err)
-		} else {
-			fmt.Println("Conexão com o Redis estabelecida com sucesso!")
-		}
-	}()
+	configPath := utils.GetConfigPath()
 
-	// ReadHeaderTimeout: 3 * time.Second,
-	RegisterWebSocket(r)
-	fmt.Println(os.Getenv("APPID"))
-	userRouter := r.PathPrefix("/api/v1/user").Subrouter().UseEncodedPath()
-	var userRepository user.UserRepository
-	repo, err := repository.NewRepositorySqlite()
+	cfgFile, err := config.LoadConfig(configPath)
 	if err != nil {
-		fmt.Println(err)
+		log.Fatalf("LoadConfig: %v", err)
 	}
-	userHandler := handler.NewUserHandler(userRepository, repo)
 
-	RegisterUserHandler(userRouter, userHandler)
+	cfg, err := config.ParseConfig(cfgFile)
+	if err != nil {
+		log.Fatalf("ParseConfig: %v", err)
+	}
+	appLogger := logger.NewApiLogger(cfg)
+	appLogger.InitLogger()
+	appLogger.Infof("AppVersion: %s, LogLevel: %s, Mode: %s, SSL: %v", cfg.Server.AppVersion, cfg.Logger.Level, cfg.Server.Mode, cfg.Server.SSL)
 
-	RootHandler(r)
-
-	server.StartServer(r)
+	// redisClient := redis.NewRedisClient(cfg)
+	// defer redisClient.Close()
+	db, err := postgres.NewPsqlDB(cfg)
+	if err != nil {
+		log.Fatal(err)
+	}
+	s := server.NewServer(cfg, db, appLogger)
+	if err = s.Run(); err != nil {
+		log.Fatal(err)
+	}
 }
