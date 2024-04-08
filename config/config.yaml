@@ -7,7 +7,7 @@ server:
   CookieName: jwt-token
   ReadTimeout: 10
   WriteTimeout: 10
-  SSL: true
+  SSL: false
   CtxDefaultTimeout: 12
   CSRF: true
   Debug: false
@@ -18,7 +18,7 @@ postgres:
   PostgresqlUser: postgres
   PostgresqlPassword: postgres
   PostgresqlDbname: postgres
-  PostgresqlSslmode: true
+  PostgresqlSslmode: false
   PgDriver: pgx
 logger:
   Development: true

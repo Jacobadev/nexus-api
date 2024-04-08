@@ -16,6 +16,7 @@ func (s *Server) MapHandlers(r *mux.Router) error {
 	authHandler := http.NewAuthHandlers(s.cfg, authUC, s.logger)
 	// Init handlers
 	// mw := .NewMiddlewareManager(authUC, s.cfg, []string{"*"}, s.logger)
+	http.HealthCheck(r.PathPrefix("/health").Subrouter())
 
 	v1 := r.PathPrefix("/api/v1/auth").Subrouter()
 

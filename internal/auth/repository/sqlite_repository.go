@@ -25,7 +25,7 @@ func (r *RepositorySqlite) Register(user *model.User) (*model.User, error) {
 
 func (r *RepositorySqlite) FindByEmail(user *model.User) (*model.User, error) {
 	u := &model.User{}
-	r.db.QueryRowx(findUserByEmail, user.Email).StructScan(u)
+	r.db.QueryRowx(findUserByEmail, &user.Email).StructScan(u)
 	return u, nil
 }
 

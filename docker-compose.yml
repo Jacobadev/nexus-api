@@ -1,48 +1,80 @@
-version: "3.7"
+version: "3.8"
 
-networks:
-  padrao:
-    driver: bridge
 
 services:
   redis:
     image: redis
     networks:
-      - padrao
+      - web_api
     ports:
       - "6379:6379"
 
-  websocket2:
-    image: websocket
-    container_name: detoka
-    command: ./main
-    environment:
-      - APPID=2222
-    depends_on:
-      - redis
-    networks:
-      - padrao
-
   websocket1:
-    build: .
-    image: websocket
-    container_name: meu_piru
-    command: ./main
+    image: golang:1.22.2
+    container_name: websocket1
     environment:
       - APPID=1111
     depends_on:
       - redis
+      - postgres
     networks:
-      - padrao
+      - web_api
+    healthcheck:
+      test: ["CMD", "curl", "http://localhost:5000/health"]
+    volumes:
+      - .:/app
+    command: sh -c "cd /app && go mod tidy && curl -sSfL https://raw.githubusercontent.com/cosmtrek/air/master/install.sh | sh -s -- -b $(go env GOPATH)/bin && air /app/cmd/main.go"
+
+
+  websocket2:
+    image: golang:1.22.2
+    container_name: websocket2
+    environment:
+      - APPID=2222
+    depends_on:
+      - redis
+      - postgres
+    networks:
+      - web_api
+    healthcheck:
+      test: ["CMD", "curl", "http://localhost:5000/health"]
+    volumes:
+      - .:/app
+    command: sh -c "cd /app && go mod tidy && curl -sSfL https://raw.githubusercontent.com/cosmtrek/air/master/install.sh | sh -s -- -b $(go env GOPATH)/bin && air /app/cmd/main.go"
 
   loadbalancer:
     image: nginx
+    container_name: load_balancer
     ports:
-      - "8080:80"
+      - "80:80"
     volumes:
       - ./nginx.conf:/etc/nginx/nginx.conf
     networks:
-      - padrao
+      - web_api
     depends_on:
-      - websocket1
-      - websocket2
+      websocket1:
+        condition: service_healthy
+          
+      websocket2:
+        condition: service_healthy
+      
+    
+
+  postgres:
+    image: postgres:16.2-alpine3.19
+    container_name: postgres
+    restart: always
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=postgres
+    ports:
+      - 5432:5432
+    volumes:
+      - /temp/pgdata:/var/lib/postgresql/data
+    networks:
+      - web_api
+
+networks:
+  web_api:
+    driver: bridge

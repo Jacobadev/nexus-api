@@ -1,13 +1,12 @@
 package http
 
 import (
-	"encoding/json"
+	"fmt"
 	"net/http"
 
 	"github.com/gateway-address/config"
 	"github.com/gateway-address/internal/auth"
 	model "github.com/gateway-address/internal/models"
-	"github.com/gateway-address/pkg/httpErrors"
 	"github.com/gateway-address/pkg/logger"
 	"github.com/gateway-address/pkg/utils"
 )
@@ -29,35 +28,36 @@ func (h *authHandlers) Register() http.HandlerFunc {
 		if err := utils.ReadRequest(r, user); err != nil {
 			utils.LogResponseError(r, h.logger, err)
 			w.WriteHeader(http.StatusBadRequest)
-			w.Write([]byte(httpErrors.ErrBadRequest))
 			return
 		}
+
+		fmt.Println(user)
 		createdUser, err := h.authUC.Register(user)
 		if err != nil {
 			utils.LogResponseError(r, h.logger, err)
 			w.WriteHeader(http.StatusInternalServerError)
-			w.Write([]byte(httpErrors.InternalServerError.Error()))
 			return
 		}
+		fmt.Println(createdUser)
 
-		if err := utils.ReadRequest(r, user); err != nil {
-			utils.LogResponseError(r, h.logger, err)
-			w.WriteHeader(http.StatusInternalServerError)
-			w.Write([]byte(httpErrors.InternalServerError.Error()))
-			return
-		}
-		w.WriteHeader(http.StatusCreated)
-		jsonData, err := json.Marshal(createdUser)
-		if err != nil {
-			utils.LogResponseError(r, h.logger, err)
-			w.WriteHeader(http.StatusInternalServerError)
-			w.Write([]byte(httpErrors.InternalServerError.Error()))
-			return
-		}
-
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusCreated)
-		w.Write(jsonData)
+		// fmt.Println("creating")
+		//
+		// if err := utils.ReadRequest(r, user); err != nil {
+		// 	utils.LogResponseError(r, h.logger, err)
+		// 	w.WriteHeader(http.StatusInternalServerError)
+		// 	return
+		// }
+		// w.WriteHeader(http.StatusCreated)
+		// jsonData, err := json.Marshal(createdUser)
+		// if err != nil {
+		// 	utils.LogResponseError(r, h.logger, err)
+		// 	w.WriteHeader(http.StatusInternalServerError)
+		// 	return
+		// }
+		//
+		// w.Header().Set("Content-Type", "application/json")
+		// w.WriteHeader(http.StatusCreated)
+		// w.Write(jsonData)
 	}
 }
 
