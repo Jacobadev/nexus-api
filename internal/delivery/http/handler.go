@@ -2,7 +2,6 @@ package http
 
 import (
 	"encoding/json"
-	"io"
 	"net/http"
 
 	"github.com/gateway-address/config"
@@ -25,17 +24,16 @@ func NewAuthHandlers(cfg *config.Config, authUC auth.UseCase, log logger.Logger)
 
 func (h *authHandlers) Register() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		var user *model.User
-		body, err := io.ReadAll(r.Body)
-		if err != nil {
-
-			http.Error(w, "Error reading json", http.StatusBadRequest)
-			return
-
-		}
-		err = json.Unmarshal(body, &user)
-		if err != nil {
+		user := &model.User{}
+		defer r.Body.Close()
+		if err := utils.ReadRequest(r, user); err != nil {
+			h.logger.Infof("reading request: %s, err: %v", http.StatusText(http.StatusBadRequest), err)
 			http.Error(w, "Error decoding JSON", http.StatusBadRequest)
+			return
+		}
+		if err := utils.ValidateUser(user); err != nil {
+			h.logger.Errorf("Invalid user: %v", err)
+			http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 			return
 		}
 
@@ -44,10 +42,10 @@ func (h *authHandlers) Register() http.HandlerFunc {
 			httpErrors.WriteJsonResponse(w, registerErr)
 			return
 		}
-		h.logger.Infof("After Registered: %s", createdUser)
-
+		h.logger.Infof("User created ID: %d", createdUser.User.ID)
 		userJson, err := json.Marshal(createdUser)
 		if err != nil {
+			h.logger.Errorf("Error creating user: %v", err)
 			http.Error(w, "Error decoding JSON", http.StatusBadRequest)
 			return
 		}
@@ -63,13 +61,34 @@ func (h *authHandlers) Login() http.HandlerFunc {
 		Email    string `json:"email" db:"email" validate:"omitempty,lte=60,email"`
 		Password string `json:"password,omitempty" db:"password" validate:"required,gte=6"`
 	}
+
 	return func(w http.ResponseWriter, r *http.Request) {
+		// Decode the JSON body into a Login struct
 		login := &Login{}
-		if err := utils.ReadRequest(c, login); err != nil {
-			utils.LogResponseError(c, h.logger, err)
-			return c.JSON(httpErrors.ErrorResponse(err))
+		if err := utils.ReadRequest(r, login); err != nil {
+			h.logger.Infof("err reading request: %s, err: %v", http.StatusText(http.StatusBadRequest), err)
+			http.Error(w, "Error decoding JSON", http.StatusBadRequest)
+			return
 		}
-		w.WriteHeader(http.StatusOK)
+
+		authenticatedUser, err := h.authUC.Login(&model.User{
+			UserName: login.UserName,
+			Email:    login.Email,
+			Password: login.Password,
+		})
+		if err != nil {
+			h.logger.Errorf("Authentication failed: %v", err)
+			http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
+
+		}
+		authdUserJson, err := json.Marshal(authenticatedUser)
+		if err != nil {
+			http.Error(w, "Error encoding JSON", http.StatusInternalServerError)
+			return
+		}
+		// Write the JSON response
+		w.Header().Set("Content-Type", "application/json")
+		w.Write(authdUserJson)
 	}
 }
 

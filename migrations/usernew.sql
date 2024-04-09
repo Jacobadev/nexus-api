@@ -8,7 +8,3 @@ CREATE TABLE users (
   created_at   TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at   TIMESTAMP WITH TIME ZONE             DEFAULT CURRENT_TIMESTAMP
 );
-
-INSERT INTO users (first_name, last_name, email, username, password) 
-VALUES 
-    ('Magda', 'Renac', 'mrenac0@businesswire.com', 'mrenac0', 'test_account');

@@ -1,6 +1,5 @@
 INSERT INTO users (first_name, last_name, email, username, password) 
 VALUES 
-    ('Reine', 'Freshwater', 'rfreshwater1@godaddy.com', 'rfreshwater1', 'qM6"<kF/"b$87'),
     ('Meridith', 'Pedwell', 'mpedwell2@walmart.com', 'mpedwell2', 'nX8%|1<b'),
     ('Cicely', 'Cabrer', 'ccabrer3@hexun.com', 'ccabrer3', 'pF0~/S*_Kq*tA'),
     ('Filmer', 'Ballinger', 'fballinger4@gmpg.org', 'fballinger4', 'gP9!Wda4e'),

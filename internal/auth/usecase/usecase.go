@@ -5,6 +5,7 @@ import (
 	"github.com/gateway-address/internal/auth"
 	"github.com/gateway-address/internal/auth/repository"
 	model "github.com/gateway-address/internal/models"
+	"github.com/gateway-address/pkg/httpErrors"
 	"github.com/gateway-address/pkg/logger"
 	"github.com/gateway-address/pkg/utils"
 	"github.com/pkg/errors"
@@ -28,30 +29,56 @@ func NewAuthUseCase(cfg *config.Config, authRepo *repository.RepositorySqlite, l
 }
 
 func (u *authUC) Register(user *model.User) (*model.UserWithToken, error) {
-	u.logger.Info("Checking if email exists")
-	err := u.authRepo.FindByEmail(user)
-	if err != nil {
-		return nil, err
+	existsUser, err := u.authRepo.FindByEmail(user)
+	if existsUser != nil || err == nil {
+		u.logger.Error("%s, err: %v", httpErrors.ErrEmailAlreadyExists, err)
+		return nil, errors.New(httpErrors.ErrEmailAlreadyExists)
 	}
-	u.logger.Info("email not found")
 
 	if err := user.PrepareCreate(); err != nil {
-		return nil, errors.WithMessage(err, "Unable to prepare user")
+		u.logger.Error("%s, err: %v", httpErrors.ErrPreparing, err)
+		return nil, errors.WithMessage(err, httpErrors.ErrPreparing)
 	}
 
 	createdUser, err := u.authRepo.Register(user)
 	if err != nil {
+		u.logger.Error("%s, err: %v", httpErrors.ErrRegistering, err)
 		return nil, err
 	}
 	createdUser.SanitizePassword()
-	u.logger.Infof("password sanitized")
 	token, err := utils.GenerateJWTToken(createdUser, u.cfg)
 	if err != nil {
+		u.logger.Infof("%s err: %v", httpErrors.ErrGeneratingJWT, err)
 		return nil, err
 	}
 
 	return &model.UserWithToken{
 		User:  createdUser,
+		Token: token,
+	}, nil
+}
+
+func (u *authUC) Login(user *model.User) (*model.UserWithToken, error) {
+	foundUser, err := u.authRepo.FindByEmail(user)
+	if err != nil {
+		u.logger.Errorf("%s, err: %v", httpErrors.ErrNoSuchUser, err)
+		return nil, err
+	}
+	if err = foundUser.ComparePasswords(user.Password); err != nil {
+		u.logger.Error("%s, err: %v", httpErrors.ErrWrongPassword, err)
+		return nil, err
+	}
+	u.logger.Infof("user logged sucessfully: %d", foundUser.ID)
+	foundUser.SanitizePassword()
+
+	token, err := utils.GenerateJWTToken(foundUser, u.cfg)
+	if err != nil {
+		u.logger.Infof("%s err: %v", httpErrors.ErrGeneratingJWT, err)
+		return nil, err
+	}
+
+	return &model.UserWithToken{
+		User:  foundUser,
 		Token: token,
 	}, nil
 }

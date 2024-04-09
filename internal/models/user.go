@@ -8,12 +8,12 @@ import (
 )
 
 type User struct {
-	ID        int       `json:"id" db:"user_id"`
-	UserName  string    `json:"username" db:"username"`
-	Password  string    `json:"password" db:"password"`
-	Email     string    `json:"email" db:"email"`
-	FirstName string    `json:"first_name" db:"first_name"`
-	LastName  string    `json:"last_name" db:"last_name"`
+	ID        int       `json:"id" db:"user_id" validate:"omitempty"`
+	UserName  string    `json:"username" db:"username" validate:"required,gte=5,lte=20"`
+	Password  string    `json:"password,omitempty" db:"password" validate:"required,gte=8,containsany=!@#$,containsany=ABCDEFGHIJKLMNOPQRSTUVWXYZ,containsany=abcdefghijklmnopqrstuvwxyz"`
+	Email     string    `json:"email,omitempty" db:"email" validate:"required,omitempty,lte=60,email"`
+	FirstName string    `json:"first_name" db:"first_name" redis:"first_name" validate:"required,lte=30"`
+	LastName  string    `json:"last_name" db:"last_name" redis:"last_name" validate:"required,lte=30"`
 	CreatedAt time.Time `json:"created_at,omitempty" db:"created_at" redis:"created_at"`
 	UpdatedAt time.Time `json:"updated_at,omitempty" db:"updated_at" redis:"updated_at"`
 }

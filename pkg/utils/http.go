@@ -3,21 +3,23 @@ package utils
 import (
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 
 	"github.com/gateway-address/config"
-	model "github.com/gateway-address/internal/models"
 	"github.com/gateway-address/pkg/logger"
 )
 
-func ReadRequest(r *http.Request) (*model.User, error) {
-	fmt.Println("Reading Request...")
-	user := &model.User{}
-	err := json.NewDecoder(r.Body).Decode(user)
+func ReadRequest(r *http.Request, u interface{}) error {
+	body, err := io.ReadAll(r.Body)
 	if err != nil {
-		return nil, err
+		return err
 	}
-	return user, nil
+	if err := json.Unmarshal(body, u); err != nil {
+		return fmt.Errorf("error Unmarshalling: %v", err)
+	}
+
+	return nil
 }
 
 // Get request id from echo context
