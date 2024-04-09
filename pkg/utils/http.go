@@ -2,18 +2,22 @@ package utils
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 
 	"github.com/gateway-address/config"
+	model "github.com/gateway-address/internal/models"
 	"github.com/gateway-address/pkg/logger"
 )
 
-func ReadRequest(r *http.Request, s interface{}) error {
-	err := json.NewDecoder(r.Body).Decode(s)
+func ReadRequest(r *http.Request) (*model.User, error) {
+	fmt.Println("Reading Request...")
+	user := &model.User{}
+	err := json.NewDecoder(r.Body).Decode(user)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	return validate.StructCtx(r.Context(), s)
+	return user, nil
 }
 
 // Get request id from echo context
@@ -34,16 +38,6 @@ func ConfigureJWTCookie(cfg *config.Config, jwtToken string) *http.Cookie {
 		HttpOnly:   cfg.Cookie.HTTPOnly,
 		SameSite:   0,
 	}
-}
-
-func ErrResponseWithLog(r *http.Request, logger logger.Logger, err error) error {
-	logger.Errorf(
-		"ErrResponseWithLog, RequestID: %s, IPAddress: %s, Error: %s",
-		GetRequestID(r),
-		GetIPAddress(r),
-		err,
-	)
-	return err
 }
 
 func GetIPAddress(r *http.Request) string {

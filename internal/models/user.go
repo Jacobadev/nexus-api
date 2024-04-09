@@ -2,20 +2,20 @@ package model
 
 import (
 	"strings"
+	"time"
 
-	"github.com/gofrs/uuid"
 	"golang.org/x/crypto/bcrypt"
 )
 
 type User struct {
-	ID        uuid.UUID `json:"id"`
-	FirstName string    `json:"first_name"`
-	LastName  string    `json:"last_name"`
-	UserName  string    `json:"username"`
-	Email     string    `json:"email"`
-	Password  string    `json:"password"`
-	CreatedAt string    `json:"created_at"`
-	UpdatedAt string    `json:"updated_at"`
+	ID        int       `json:"id" db:"user_id"`
+	UserName  string    `json:"username" db:"username"`
+	Password  string    `json:"password" db:"password"`
+	Email     string    `json:"email" db:"email"`
+	FirstName string    `json:"first_name" db:"first_name"`
+	LastName  string    `json:"last_name" db:"last_name"`
+	CreatedAt time.Time `json:"created_at,omitempty" db:"created_at" redis:"created_at"`
+	UpdatedAt time.Time `json:"updated_at,omitempty" db:"updated_at" redis:"updated_at"`
 }
 
 func (u *User) HashPassword() error {

@@ -1,13 +1,10 @@
 package usecase
 
 import (
-	"net/http"
-
 	"github.com/gateway-address/config"
 	"github.com/gateway-address/internal/auth"
 	"github.com/gateway-address/internal/auth/repository"
 	model "github.com/gateway-address/internal/models"
-	"github.com/gateway-address/pkg/httpErrors"
 	"github.com/gateway-address/pkg/logger"
 	"github.com/gateway-address/pkg/utils"
 	"github.com/pkg/errors"
@@ -31,14 +28,15 @@ func NewAuthUseCase(cfg *config.Config, authRepo *repository.RepositorySqlite, l
 }
 
 func (u *authUC) Register(user *model.User) (*model.UserWithToken, error) {
-	existsUser, err := u.authRepo.FindByEmail(user)
-
-	if existsUser != nil || err == nil {
-		return nil, httpErrors.NewRestErrorWithMessage(http.StatusBadRequest, httpErrors.ErrEmailAlreadyExists, nil)
+	u.logger.Info("Checking if email exists")
+	err := u.authRepo.FindByEmail(user)
+	if err != nil {
+		return nil, err
 	}
+	u.logger.Info("email not found")
 
-	if err = user.PrepareCreate(); err != nil {
-		return nil, httpErrors.NewBadRequestError(errors.Wrap(err, "authUC.Register.PrepareCreate"))
+	if err := user.PrepareCreate(); err != nil {
+		return nil, errors.WithMessage(err, "Unable to prepare user")
 	}
 
 	createdUser, err := u.authRepo.Register(user)
@@ -46,12 +44,11 @@ func (u *authUC) Register(user *model.User) (*model.UserWithToken, error) {
 		return nil, err
 	}
 	createdUser.SanitizePassword()
-
+	u.logger.Infof("password sanitized")
 	token, err := utils.GenerateJWTToken(createdUser, u.cfg)
 	if err != nil {
-		return nil, httpErrors.NewInternalServerError(errors.Wrap(err, "authUC.Register.GenerateJWTToken"))
+		return nil, err
 	}
-	u.authRepo.Register(user)
 
 	return &model.UserWithToken{
 		User:  createdUser,
@@ -121,4 +118,4 @@ func (u *authUC) Register(user *model.User) (*model.UserWithToken, error) {
 //
 // func (u *authUC) generateAWSMinioURL(bucket string, key string) string {
 // 	return fmt.Sprintf("%s/minio/%s/%s", u.cfg.AWS.MinioEndpoint, bucket, key)
-// }
+//

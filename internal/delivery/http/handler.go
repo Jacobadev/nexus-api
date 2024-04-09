@@ -1,12 +1,14 @@
 package http
 
 import (
-	"fmt"
+	"encoding/json"
+	"io"
 	"net/http"
 
 	"github.com/gateway-address/config"
 	"github.com/gateway-address/internal/auth"
 	model "github.com/gateway-address/internal/models"
+	"github.com/gateway-address/pkg/httpErrors"
 	"github.com/gateway-address/pkg/logger"
 	"github.com/gateway-address/pkg/utils"
 )
@@ -23,41 +25,51 @@ func NewAuthHandlers(cfg *config.Config, authUC auth.UseCase, log logger.Logger)
 
 func (h *authHandlers) Register() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		user := &model.User{}
-
-		if err := utils.ReadRequest(r, user); err != nil {
-			utils.LogResponseError(r, h.logger, err)
-			w.WriteHeader(http.StatusBadRequest)
-			return
-		}
-
-		fmt.Println(user)
-		createdUser, err := h.authUC.Register(user)
+		var user *model.User
+		body, err := io.ReadAll(r.Body)
 		if err != nil {
-			utils.LogResponseError(r, h.logger, err)
-			w.WriteHeader(http.StatusInternalServerError)
+
+			http.Error(w, "Error reading json", http.StatusBadRequest)
+			return
+
+		}
+		err = json.Unmarshal(body, &user)
+		if err != nil {
+			http.Error(w, "Error decoding JSON", http.StatusBadRequest)
 			return
 		}
-		fmt.Println(createdUser)
 
-		// fmt.Println("creating")
-		//
-		// if err := utils.ReadRequest(r, user); err != nil {
-		// 	utils.LogResponseError(r, h.logger, err)
-		// 	w.WriteHeader(http.StatusInternalServerError)
-		// 	return
-		// }
-		// w.WriteHeader(http.StatusCreated)
-		// jsonData, err := json.Marshal(createdUser)
-		// if err != nil {
-		// 	utils.LogResponseError(r, h.logger, err)
-		// 	w.WriteHeader(http.StatusInternalServerError)
-		// 	return
-		// }
-		//
-		// w.Header().Set("Content-Type", "application/json")
-		// w.WriteHeader(http.StatusCreated)
-		// w.Write(jsonData)
+		createdUser, registerErr := h.authUC.Register(user)
+		if registerErr != nil {
+			httpErrors.WriteJsonResponse(w, registerErr)
+			return
+		}
+		h.logger.Infof("After Registered: %s", createdUser)
+
+		userJson, err := json.Marshal(createdUser)
+		if err != nil {
+			http.Error(w, "Error decoding JSON", http.StatusBadRequest)
+			return
+		}
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusCreated)
+		w.Write(userJson)
+	}
+}
+
+func (h *authHandlers) Login() http.HandlerFunc {
+	type Login struct {
+		UserName string `json:"username" db:"username"`
+		Email    string `json:"email" db:"email" validate:"omitempty,lte=60,email"`
+		Password string `json:"password,omitempty" db:"password" validate:"required,gte=6"`
+	}
+	return func(w http.ResponseWriter, r *http.Request) {
+		login := &Login{}
+		if err := utils.ReadRequest(c, login); err != nil {
+			utils.LogResponseError(c, h.logger, err)
+			return c.JSON(httpErrors.ErrorResponse(err))
+		}
+		w.WriteHeader(http.StatusOK)
 	}
 }
 
@@ -141,24 +153,24 @@ func (h *authHandlers) Register() http.HandlerFunc {
 // 	}
 // }
 
-// func (h *authHandlers) PartialUpdate() http.HandlerFunc {
-// 	return func(w http.ResponseWriter, r *http.Request) {
-// 		vars := mux.Vars(r)
-// 		idStr := vars["id"]
-// 		id, err := strconv.Atoi(idStr)
-// 		if err != nil {
-// 			http.Error(w, fmt.Sprintf("Failed to convert id to int: %v", err), http.StatusInternalServerError)
-// 			return
-// 		}
-// 		var user user.User
-// 		err = json.NewDecoder(r.Body).Decode(&user)
-// 		if err != nil {
-// 			http.Error(w, fmt.Sprintf("Failed to convert id to int: %v", err), http.StatusInternalServerError)
-// 			return
-// 		}
-// 		err = h.authUC.PartialUpdateByID(id, &user)
-// 		if err != nil {
-// 			http.Error(w, fmt.Sprintf("Failed to update user: %v", err), http.StatusInternalServerError)
-// 		}
-// 	}
-// }
+//	func (h *authHandlers) PartialUpdate() http.HandlerFunc {
+//		return func(w http.ResponseWriter, r *http.Request) {
+//			vars := mux.Vars(r)
+//			idStr := vars["id"]
+//			id, err := strconv.Atoi(idStr)
+//			if err != nil {
+//				http.Error(w, fmt.Sprintf("Failed to convert id to int: %v", err), http.StatusInternalServerError)
+//				return
+//			}
+//			var user user.User
+//			err = json.NewDecoder(r.Body).Decode(&user)
+//			if err != nil {
+//				http.Error(w, fmt.Sprintf("Failed to convert id to int: %v", err), http.StatusInternalServerError)
+//				return
+//			}
+//			err = h.authUC.PartialUpdateByID(id, &user)
+//			if err != nil {
+//				http.Error(w, fmt.Sprintf("Failed to update user: %v", err), http.StatusInternalServerError)
+//			}
+//		}
+//	}

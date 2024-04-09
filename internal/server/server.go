@@ -29,7 +29,7 @@ func NewServer(cfg *config.Config, db *sqlx.DB, logger logger.Logger) *Server {
 }
 
 func (s *Server) Run() error {
-	if err := s.MapHandlers(s.router); err != nil {
+	if err := s.MapHandlers(); err != nil {
 		return err
 	}
 	server := &http.Server{

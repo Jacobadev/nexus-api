@@ -6,7 +6,6 @@ import (
 	"log"
 	"os"
 	"os/signal"
-	"time"
 
 	"github.com/gateway-address/config"
 	"github.com/gateway-address/internal/server"
@@ -15,7 +14,6 @@ import (
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/exporters/zipkin"
 	"go.opentelemetry.io/otel/sdk/resource"
-	"go.opentelemetry.io/otel/trace"
 
 	sdktrace "go.opentelemetry.io/otel/sdk/trace"
 	semconv "go.opentelemetry.io/otel/semconv/v1.24.0"
@@ -59,18 +57,18 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+
 	defer func() {
 		if err := shutdown(ctx); err != nil {
 			log.Fatal("failed to shutdown TracerProvider: %w", err)
 		}
 	}()
 
-	tr := otel.Tracer("component-main")
-	ctx, span := tr.Start(ctx, "foo", trace.WithSpanKind(trace.SpanKindServer))
-	<-time.After(6 * time.Millisecond)
-	bar(ctx)
-	<-time.After(6 * time.Millisecond)
-	span.End()
+	// tr := otel.Tracer("Main-function")
+	// ctx, span := tr.Start(ctx, "foo", trace.WithSpanKind(trace.SpanKindServer))
+	// <-time.After(6 * time.Millisecond)
+	// <-time.After(6 * time.Millisecond)
+	// span.End()
 	cfgFile, err := config.LoadConfig("./config/config")
 	if err != nil {
 		log.Fatalf("LoadConfig: %v", err)
@@ -98,11 +96,4 @@ func main() {
 	if err := s.Run(); err != nil {
 		log.Fatal(err)
 	}
-}
-
-func bar(ctx context.Context) {
-	tr := otel.Tracer("component-bar")
-	_, span := tr.Start(ctx, "bar")
-	<-time.After(6 * time.Millisecond)
-	span.End()
 }

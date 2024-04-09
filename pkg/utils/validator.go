@@ -1,19 +1,17 @@
 package utils
 
 import (
-	"context"
-
 	"github.com/go-playground/validator/v10"
 )
 
 // Use a single instance of Validate, it caches struct info
-var validate *validator.Validate
+var valid *validator.Validate
 
 func init() {
-	validate = validator.New()
+	valid = validator.New()
 }
 
 // Validate struct fields
-func ValidateStruct(ctx context.Context, s interface{}) error {
-	return validate.StructCtx(ctx, s)
+func ValidateStruct(s interface{}) error {
+	return valid.Struct(s)
 }

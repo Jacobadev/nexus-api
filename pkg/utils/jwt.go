@@ -16,7 +16,7 @@ import (
 // JWT Claims struct
 type Claims struct {
 	Email string `json:"email"`
-	ID    string `json:"id"`
+	ID    int    `json:"id"`
 	jwt.StandardClaims
 }
 
@@ -25,7 +25,7 @@ func GenerateJWTToken(user *model.User, config *config.Config) (string, error) {
 	// Register the JWT claims, which includes the username and expiry time
 	claims := &Claims{
 		Email: user.Email,
-		ID:    user.ID.String(),
+		ID:    user.ID,
 		StandardClaims: jwt.StandardClaims{
 			ExpiresAt: time.Now().Add(time.Minute * 60).Unix(),
 		},

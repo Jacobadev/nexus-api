@@ -17,7 +17,7 @@ postgres:
   PostgresqlPort: 5432
   PostgresqlUser: postgres
   PostgresqlPassword: postgres
-  PostgresqlDbname: postgres
+  PostgresqlDbname: nexus
   PostgresqlSslmode: false
   PgDriver: pgx
 logger:

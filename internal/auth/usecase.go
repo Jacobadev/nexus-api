@@ -1,7 +1,9 @@
 //go:generate mockgen -source usecase.go -destination mock/usecase_mock.go -package mock
 package auth
 
-import model "github.com/gateway-address/internal/models"
+import (
+	model "github.com/gateway-address/internal/models"
+)
 
 // Auth repository interface
 type UseCase interface {

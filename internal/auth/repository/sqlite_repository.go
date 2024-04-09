@@ -1,9 +1,11 @@
 package repository
 
 import (
+	"errors"
 	"fmt"
 
 	model "github.com/gateway-address/internal/models"
+	"github.com/gateway-address/pkg/httpErrors"
 	"github.com/jmoiron/sqlx"
 	_ "modernc.org/sqlite"
 )
@@ -19,14 +21,27 @@ func NewRepositorySqlite(db *sqlx.DB) *RepositorySqlite {
 // NewRepository cria uma nova instância do Repository.
 func (r *RepositorySqlite) Register(user *model.User) (*model.User, error) {
 	u := &model.User{}
-	fmt.Println("registrou no banco")
+
+	fmt.Printf("user,%v , returned user: %v", user, u)
+	if err := r.db.QueryRowx(createUserQuery, &user.UserName, &user.Password, &user.Email, &user.FirstName, &user.LastName).StructScan(u); err != nil {
+		return nil, err
+	}
 	return u, nil
 }
 
-func (r *RepositorySqlite) FindByEmail(user *model.User) (*model.User, error) {
-	u := &model.User{}
-	r.db.QueryRowx(findUserByEmail, &user.Email).StructScan(u)
-	return u, nil
+func (r *RepositorySqlite) FindByEmail(user *model.User) error {
+	rows, err := r.db.Query(findUserByEmail, user.Email)
+	if err != nil {
+		return err // Retorna o erro caso ocorra algum problema durante a execução da consulta
+	}
+	defer rows.Close() // Certifique-se de fechar as linhas após a leitura
+
+	// Verifique se há uma linha retornada pela consulta
+	if rows.Next() {
+		return errors.New(httpErrors.ErrEmailAlreadyExists)
+	}
+
+	return nil // Retorna nil se nenhum erro ocorrer e nenhum usuário for encontrado
 }
 
 // func (r *RepositorySqlite) GetAll() ([]model.User, error) {
