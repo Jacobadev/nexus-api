@@ -17,7 +17,7 @@ func MapAuthRoutes(h *authHandlers, r *mux.Router) {
 }
 
 func HealthCheck(r *mux.Router) {
-	r.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+	r.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
 		w.Write([]byte("OK"))
 	})
