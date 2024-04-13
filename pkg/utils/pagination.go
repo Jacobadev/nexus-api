@@ -3,6 +3,7 @@ package utils
 import (
 	"fmt"
 	"math"
+	"net/http"
 	"strconv"
 )
 
@@ -15,6 +16,19 @@ type PaginationQuery struct {
 	Size    int    `json:"size,omitempty"`
 	Page    int    `json:"page,omitempty"`
 	OrderBy string `json:"orderBy,omitempty"`
+}
+
+func GetPaginationFromCtx(r *http.Request) (*PaginationQuery, error) {
+	q := &PaginationQuery{}
+	if err := q.SetPage(r.URL.Query().Get("page")); err != nil {
+		return nil, err
+	}
+	if err := q.SetSize(r.URL.Query().Get("size")); err != nil {
+		return nil, err
+	}
+	q.SetOrderBy(r.URL.Query().Get("orderBy"))
+
+	return q, nil
 }
 
 // Set page size

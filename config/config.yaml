@@ -10,7 +10,7 @@ server:
   SSL: false
   CtxDefaultTimeout: 12
   CSRF: true
-  Debug: false
+  Debug: true
 
 postgres:
   PostgresqlHost: localhost
@@ -27,7 +27,7 @@ logger:
   Encoding: console
   Level: info
 redis:
-  RedisAddr: redis:6379
+  RedisAddr: localhost:6379
   RedisPassword:
   RedisDb: 0
   RedisDefaultdb: 0
@@ -37,9 +37,13 @@ redis:
   Password: ""
   DB: 0
 
-
 cookie:
   Name: jwt-token
   MaxAge: 86400
   Secure: false
   HttpOnly: true
+
+session:
+  Name: session-id
+  Prefix: api-session
+  Expire: 3600

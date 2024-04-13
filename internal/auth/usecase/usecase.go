@@ -68,7 +68,6 @@ func (u *authUC) Login(user *model.User) (*model.UserWithToken, error) {
 		u.logger.Error("%s, err: %v", httpErrors.ErrWrongPassword, err)
 		return nil, err
 	}
-	u.logger.Infof("user logged sucessfully: %d", foundUser.ID)
 	foundUser.SanitizePassword()
 
 	token, err := utils.GenerateJWTToken(foundUser, u.cfg)
@@ -83,51 +82,62 @@ func (u *authUC) Login(user *model.User) (*model.UserWithToken, error) {
 	}, nil
 }
 
+func (u *authUC) GetByID(userID int) (*model.User, error) {
+	user, err := u.authRepo.GetByID(userID)
+	if err != nil {
+		u.logger.Errorf("authUC.GetByID.GetByIDCtx: %v", err)
+		return nil, err
+	}
+	return user, nil
+}
+
+func (u *authUC) Delete(userID int) error {
+	if err := u.authRepo.Delete(userID); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (u *authUC) GetUsers(pq *utils.PaginationQuery) (*model.UsersList, error) {
+	users := &model.UsersList{}
+	u.authRepo.GetUsers(pq)
+	return users, nil
+}
+
 // Update existing user
-// func (u *authUC) Update(ctx context.Context, user *models.User) (*models.User, error) {
-// 	if err := user.PrepareUpdate(); err != nil {
-// 		return nil, httpErrors.NewBadRequestError(errors.Wrap(err, "authUC.Register.PrepareUpdate"))
-// 	}
 //
-// 	updatedUser, err := u.authRepo.Update(ctx, user)
-// 	if err != nil {
-// 		return nil, err
-// 	}
+//	func (u *authUC) Update(ctx context.Context, user *models.User) (*models.User, error) {
+//		if err := user.PrepareUpdate(); err != nil {
+//			return nil, httpErrors.NewBadRequestError(errors.Wrap(err, "authUC.Register.PrepareUpdate"))
+//		}
 //
-// 	updatedUser.SanitizePassword()
+//		updatedUser, err := u.authRepo.Update(ctx, user)
+//		if err != nil {
+//			return nil, err
+//		}
 //
-// 	if err = u.redisRepo.DeleteUserCtx(ctx, u.GenerateUserKey(user.UserID.String())); err != nil {
-// 		u.logger.Errorf("AuthUC.Update.DeleteUserCtx: %s", err)
-// 	}
+//		updatedUser.SanitizePassword()
 //
-// 	updatedUser.SanitizePassword()
+//		if err = u.redisRepo.DeleteUserCtx(ctx, u.GenerateUserKey(user.UserID.String())); err != nil {
+//			u.logger.Errorf("AuthUC.Update.DeleteUserCtx: %s", err)
+//		}
 //
-// 	return updatedUser, nil
-// }
+//		updatedUser.SanitizePassword()
+//
+//		return updatedUser, nil
+//	}
 //
 // // Delete new user
-// func (u *authUC) Delete(ctx context.Context, userID uuid.UUID) error {
-// 	if err := u.authRepo.Delete(ctx, userID); err != nil {
-// 		return err
-// 	}
-//
-// 	return nil
-// }
-//
-// // Get user by id
-// func (u *authUC) GetByID(ctx context.Context, userID uuid.UUID) (*models.User, error) {
-// 	return u.authRepo.GetByID(ctx, userID)
-// }
 //
 // // Find users by name
-// func (u *authUC) FindByName(ctx context.Context, name string, query *utils.PaginationQuery) (*models.UsersList, error) {
-// 	return u.authRepo.FindByName(ctx, name, query)
-// }
+//
+//	func (u *authUC) FindByName(ctx context.Context, name string, query *utils.PaginationQuery) (*models.UsersList, error) {
+//		return u.authRepo.FindByName(ctx, name, query)
+//	}
 //
 // // Get users with pagination
-// func (u *authUC) GetUsers(ctx context.Context, pq *utils.PaginationQuery) (*models.UsersList, error) {
-// 	return u.authRepo.GetUsers(ctx, pq)
-// }
+
 //
 // // Login user, returns user model with jwt token
 // func (u *authUC) Login(ctx context.Context, user *models.User) (*models.UserWithToken, error) {
@@ -145,4 +155,3 @@ func (u *authUC) Login(user *model.User) (*model.UserWithToken, error) {
 //
 // func (u *authUC) generateAWSMinioURL(bucket string, key string) string {
 // 	return fmt.Sprintf("%s/minio/%s/%s", u.cfg.AWS.MinioEndpoint, bucket, key)
-//

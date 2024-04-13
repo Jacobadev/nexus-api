@@ -57,8 +57,14 @@ type Config struct {
 	Logger   Logger
 	Postgres PostgresConfig
 	Cookie   Cookie
+	Session  Session
 }
 
+type Session struct {
+	Prefix string
+	Name   string
+	Expire int
+}
 type Cookie struct {
 	Name     string
 	MaxAge   int

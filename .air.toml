@@ -28,7 +28,7 @@ log = "air_errors.log"
 [log]
 # Show log time
 time = false
-
+main_only = true
 [color]
 # Customize each part's color. If no color found, use the raw app log.
 main = "magenta"

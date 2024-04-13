@@ -11,15 +11,16 @@ import (
 
 // Map Server Handlers
 func (s *Server) MapHandlers() error {
-	authRepo := repository.NewRepositorySqlite(s.db)
-	authUC := authUseCase.NewAuthUseCase(s.cfg, authRepo, s.logger)
-	authHandler := http.NewAuthHandlers(s.cfg, authUC, s.logger)
-
 	sessRepo := sessRepository.NewSessionRepository(s.redisClient, s.cfg)
 	sessUC := sessUseCase.NewSessionUseCase(sessRepo, s.cfg)
+
+	authRepo := repository.NewRepositorySqlite(s.db)
+	authUC := authUseCase.NewAuthUseCase(s.cfg, authRepo, s.logger)
+	authHandler := http.NewAuthHandlers(s.cfg, sessUC, authUC, s.logger)
+
 	mw := middleware.NewMiddlewareManager(sessUC, authUC, s.cfg, []string{"*"}, s.logger)
 	s.router.Use(mw.RequestLoggerMiddleware)
-	s.router.Use(mw.DebugMiddleware)
+	// s.router.Use(mw.DebugMiddleware)
 	apiV1 := s.router.PathPrefix("/api/v1").Subrouter()
 
 	// Define subrouters for different sections of the API

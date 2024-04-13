@@ -24,8 +24,8 @@ const (
 	maxHeaderBytes = 1 << 20
 )
 
-func NewServer(cfg *config.Config, db *sqlx.DB, logger logger.Logger) *Server {
-	return &Server{cfg: cfg, router: mux.NewRouter(), db: db, logger: logger}
+func NewServer(cfg *config.Config, db *sqlx.DB, logger logger.Logger, redisClient *redis.Client) *Server {
+	return &Server{cfg: cfg, router: mux.NewRouter(), db: db, logger: logger, redisClient: redisClient}
 }
 
 func (s *Server) Run() error {

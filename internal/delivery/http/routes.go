@@ -9,10 +9,11 @@ import (
 func MapAuthRoutes(h *authHandlers, r *mux.Router) {
 	r.HandleFunc("/register", h.Register()).Methods("POST")
 	r.HandleFunc("/login", h.Login()).Methods("POST")
-	// r.HandleFunc("/", h.GetUsers()).Methods("GET")
-	// r.HandleFunc("/{id}", h.GetUserByID()).Methods("GET")
-	// r.HandleFunc("/{id}", h.Delete()).Methods("DELETE")
+	r.HandleFunc("/logout", h.Logout()).Methods("POST")
+	r.HandleFunc("/{id}", h.GetUserByID()).Methods("GET")
+	r.HandleFunc("/{id}", h.Delete()).Methods("DELETE")
 	// r.HandleFunc("/{id}", h.UpdateByID()).Methods("PUT")
+	// r.HandleFunc("/", h.GetUsers()).Methods("GET")
 	// r.HandleFunc("/{id}", h.PartialUpdateUserByID()).Methods("PATCH")
 }
 

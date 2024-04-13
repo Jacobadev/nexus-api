@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"flag"
+	"fmt"
 	"log"
 	"os"
 	"os/signal"
@@ -10,6 +11,7 @@ import (
 	"github.com/gateway-address/config"
 	"github.com/gateway-address/internal/server"
 	"github.com/gateway-address/pkg/db/postgres"
+	"github.com/gateway-address/pkg/db/redis"
 	"github.com/gateway-address/pkg/logger"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/exporters/zipkin"
@@ -46,7 +48,6 @@ func initTracer(url string) (func(context.Context) error, error) {
 }
 
 func main() {
-	log.Println("Starting api server")
 	url := flag.String("zipkin", "http://localhost:9411/api/v2/spans", "zipkin url")
 	flag.Parse()
 
@@ -55,12 +56,12 @@ func main() {
 
 	shutdown, err := initTracer(*url)
 	if err != nil {
-		log.Fatal(err)
+		fmt.Print(err.Error())
 	}
 
 	defer func() {
 		if err := shutdown(ctx); err != nil {
-			log.Fatal("failed to shutdown TracerProvider: %w", err)
+			fmt.Print(err.Error())
 		}
 	}()
 
@@ -89,10 +90,14 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+	defer db.Close()
 	appLogger.Infof("Postgres connected")
+	redis := redis.NewRedisClient(cfg)
+	defer redis.Close()
+	appLogger.Infof("Redis connected")
 
 	// Create and run the server
-	s := server.NewServer(cfg, db, appLogger)
+	s := server.NewServer(cfg, db, appLogger, redis)
 	if err := s.Run(); err != nil {
 		log.Fatal(err)
 	}

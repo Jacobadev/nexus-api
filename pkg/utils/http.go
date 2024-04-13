@@ -5,9 +5,10 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"strconv"
 
 	"github.com/gateway-address/config"
-	"github.com/gateway-address/pkg/logger"
+	"github.com/gorilla/mux"
 )
 
 func ReadRequest(r *http.Request, u interface{}) error {
@@ -23,8 +24,24 @@ func ReadRequest(r *http.Request, u interface{}) error {
 }
 
 // Get request id from echo context
-func GetRequestID(r *http.Request) string {
-	return r.Context().Value("id").(string)
+func GetRequestID(r *http.Request) (int, error) {
+	// Obtaining the URL parameters from the request
+	paramVars := mux.Vars(r)
+
+	// Checking if the 'id' parameter exists in the URL parameters
+	idString, ok := paramVars["id"]
+	if !ok {
+		return 0, fmt.Errorf("ID not found in request parameters")
+	}
+
+	// Parsing the ID string to an integer
+	id, err := strconv.Atoi(idString)
+	if err != nil {
+		return 0, fmt.Errorf("failed to parse ID: %v", err)
+	}
+
+	// Returning the ID and any error
+	return id, nil
 }
 
 // ReqIDCtxKey is a key used for the Request ID in context
@@ -46,14 +63,31 @@ func GetIPAddress(r *http.Request) string {
 	return r.RemoteAddr
 }
 
-// Error response with logging error for echo context
-func LogResponseError(r *http.Request, logger logger.Logger, err error) {
-	logger.Errorf(
-		"ErrResponseWithLog, RequestID: %s, IPAddress: %s, Error: %s",
-		GetRequestID(r),
-		GetIPAddress(r),
-		err,
-	)
+func CreateSessionCookie(cfg *config.Config, session string) *http.Cookie {
+	return &http.Cookie{
+		Name:  cfg.Session.Name,
+		Value: session,
+		Path:  "/",
+		// Domain: "/",
+		// Expires:    time.Now().Add(1 * time.Minute),
+		RawExpires: "",
+		MaxAge:     cfg.Session.Expire,
+		Secure:     cfg.Cookie.Secure,
+		HttpOnly:   cfg.Cookie.HTTPOnly,
+		SameSite:   0,
+	}
 }
+
+func DeleteSessionCookie(w http.ResponseWriter, sessionName string) {
+	cookie := &http.Cookie{
+		Name:   sessionName,
+		Value:  "",
+		Path:   "/",
+		MaxAge: -1,
+	}
+	http.SetCookie(w, cookie)
+}
+
+// Error response with logging error for echo context
 
 // Read sanitize and validate request
