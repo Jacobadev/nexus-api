@@ -2,6 +2,7 @@ package e2e
 
 import (
 	"encoding/json"
+	"io"
 	"net/http"
 	"testing"
 
@@ -29,8 +30,9 @@ func (s *LogoutTestSuite) TestLogoutEndpointWorking() {
 		return
 	}
 	defer res.Body.Close()
-	var user model.UserWithToken
-	err = json.NewDecoder(res.Body).Decode(&user)
+	user := &model.UserWithToken{}
+	body, err := io.ReadAll(res.Body)
+	json.NewDecoder(res.Body).Decode(&body)
 	if err != nil {
 		s.T().Errorf("Erro ao decodificar a resposta do login: %v", err)
 		return
